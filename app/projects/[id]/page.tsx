@@ -43,7 +43,9 @@ export default function ProjectDetailPage() {
       setSuccess("Projet mis à jour avec succès.");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Impossible de modifier le projet");
-    } finally { setIsSubmitting(false); }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleCreatePhase(input: CreatePhaseInput) {
@@ -56,32 +58,153 @@ export default function ProjectDetailPage() {
       setSuccess("Phase créée avec succès.");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Impossible de créer la phase");
-    } finally { setIsSubmitting(false); }
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleDelete() {
     if (!project || !window.confirm(`Supprimer le projet « ${project.name} » et ses phases ?`)) return;
     setIsSubmitting(true);
-    try { await deleteProject(project.id); router.push("/projects?deleted=1"); }
-    catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Impossible de supprimer le projet"); setIsSubmitting(false); }
+    try {
+      await deleteProject(project.id);
+      router.push("/projects?deleted=1");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Impossible de supprimer le projet");
+      setIsSubmitting(false);
+    }
   }
 
   if (isLoading) return <main className="page-shell"><LoadingState label="Chargement du projet..." /></main>;
   if (!project) return <main className="page-shell"><div className="alert alert-error">{error || "Projet introuvable"}</div><Link className="back-link" href="/projects">← Retour aux projets</Link></main>;
 
-  return <main className="page-shell">
-    <Link className="back-link" href="/projects">← Tous les projets</Link>
-    {success && <div className="alert alert-success" role="status">{success}</div>}
-    {error && <div className="alert alert-error" role="alert">{error}</div>}
-    {isEditing ? <><section className="page-heading compact-heading"><div><p className="eyebrow">Modifier le projet</p><h1>{project.name}</h1></div></section><ProjectForm error={null} isSubmitting={isSubmitting} onCancel={() => setIsEditing(false)} onSubmit={handleUpdate} project={project} /></> : <>
-      <section className="detail-hero"><div className="detail-title"><span className="project-mark project-mark-large" aria-hidden="true">{project.name.slice(0, 1).toUpperCase()}</span><div><p className="eyebrow">Projet</p><h1>{project.name}</h1><p>{project.description || "Aucune description"}</p></div></div><div className="detail-actions"><button className="button button-secondary" type="button" onClick={() => setIsEditing(true)}>Modifier</button><button className="button button-danger" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>Supprimer</button></div></section>
-      <section className="detail-facts"><div><span>Date de début</span><strong>{formatDate(project.startDate)}</strong></div><div><span>Date de fin</span><strong>{formatDate(project.endDate)}</strong></div><div><span>Phases</span><strong>{project.phases.length}</strong></div></section>
-      <ProjectTimelineView projectId={project.id} />
-      <section className="content-section"><div className="section-heading"><div><p className="eyebrow">Séquence de travail</p><h2>Phases du projet</h2></div><button className="button button-primary" type="button" onClick={() => setIsAddingPhase((current) => !current)}><span aria-hidden="true">+</span> Nouvelle phase</button></div>
-        {isAddingPhase && <PhaseForm error={null} isSubmitting={isSubmitting} nextOrder={project.phases.length + 1} onCancel={() => setIsAddingPhase(false)} onSubmit={handleCreatePhase} />}
-        {project.phases.length === 0 ? <div className="empty-state"><span className="empty-mark" aria-hidden="true">+</span><h3>Aucune phase</h3><p>Ajoutez la première phase pour donner une séquence à ce projet.</p><button className="button button-secondary" type="button" onClick={() => setIsAddingPhase(true)}>Créer une phase</button></div> : <div className="phase-list">{project.phases.map((phase) => <Link className="phase-row" href={`/phases/${phase.id}`} key={phase.id}><span className="phase-order">{String(phase.order).padStart(2, "0")}</span><div className="phase-main"><h3>{phase.name}</h3><p>{phase.description || "Aucune description"}</p></div><div className="phase-meta"><StatusBadge status={phase.status} /><span>{formatDate(phase.deadline)}</span><span className="row-arrow" aria-hidden="true">→</span></div></Link>)}</div>}
-      </section>
-      <ProjectDecisionSection projectId={project.id} />
-    </>}
-  </main>;
+  const validatedPhases = project.phases.filter((phase) => phase.status === "VALIDATED").length;
+  const blockers = project.phases.filter((phase) => phase.status === "LOCKED" || phase.status === "REOPENED").length;
+
+  return (
+    <main className="page-shell">
+      <Link className="back-link" href="/projects">
+        ← Tous les projets
+      </Link>
+
+      {success && <div className="alert alert-success" role="status">{success}</div>}
+      {error && <div className="alert alert-error" role="alert">{error}</div>}
+
+      {isEditing ? (
+        <>
+          <section className="page-heading compact-heading">
+            <div>
+              <p className="eyebrow">Modifier le projet</p>
+              <h1>{project.name}</h1>
+            </div>
+          </section>
+          <ProjectForm error={null} isSubmitting={isSubmitting} onCancel={() => setIsEditing(false)} onSubmit={handleUpdate} project={project} />
+        </>
+      ) : (
+        <>
+          <section className="detail-hero">
+            <div className="detail-title">
+              <span className="project-mark project-mark-large" aria-hidden="true">
+                {project.name.slice(0, 1).toUpperCase()}
+              </span>
+              <div>
+                <p className="eyebrow">Projet</p>
+                <h1>{project.name}</h1>
+                <p>{project.description || "Aucune description"}</p>
+              </div>
+            </div>
+            <div className="detail-actions">
+              <button className="button button-secondary" type="button" onClick={() => setIsEditing(true)}>
+                Modifier
+              </button>
+              <button className="button button-danger" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>
+                Supprimer
+              </button>
+            </div>
+          </section>
+
+          <section className="detail-facts" aria-label="Résumé du projet">
+            <div>
+              <span>Début</span>
+              <strong>{formatDate(project.startDate)}</strong>
+            </div>
+            <div>
+              <span>Fin</span>
+              <strong>{formatDate(project.endDate)}</strong>
+            </div>
+            <div>
+              <span>Phases</span>
+              <strong>{project.phases.length}</strong>
+            </div>
+            <div>
+              <span>Validées</span>
+              <strong>{validatedPhases}</strong>
+            </div>
+            <div>
+              <span>Blocages</span>
+              <strong>{blockers}</strong>
+            </div>
+          </section>
+
+          <ProjectTimelineView projectId={project.id} />
+
+          <section className="content-section">
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Séquence de travail</p>
+                <h2>Phases du projet</h2>
+              </div>
+              <button className="button button-primary" type="button" onClick={() => setIsAddingPhase((current) => !current)}>
+                <span aria-hidden="true">+</span> Nouvelle phase
+              </button>
+            </div>
+
+            {isAddingPhase && (
+              <PhaseForm
+                error={null}
+                isSubmitting={isSubmitting}
+                nextOrder={project.phases.length + 1}
+                onCancel={() => setIsAddingPhase(false)}
+                onSubmit={handleCreatePhase}
+              />
+            )}
+
+            {project.phases.length === 0 ? (
+              <div className="empty-state">
+                <span className="empty-mark" aria-hidden="true">
+                  +
+                </span>
+                <h3>Aucune phase</h3>
+                <p>Ajoutez la première phase pour donner une séquence à ce projet.</p>
+                <button className="button button-secondary" type="button" onClick={() => setIsAddingPhase(true)}>
+                  Créer une phase
+                </button>
+              </div>
+            ) : (
+              <div className="phase-list">
+                {project.phases.map((phase) => (
+                  <Link className="phase-row" href={`/phases/${phase.id}`} key={phase.id}>
+                    <span className="phase-order">{String(phase.order).padStart(2, "0")}</span>
+                    <div className="phase-main">
+                      <h3>{phase.name}</h3>
+                      <p>{phase.description || "Aucune description"}</p>
+                    </div>
+                    <div className="phase-meta">
+                      <StatusBadge status={phase.status} />
+                      <span>{formatDate(phase.deadline)}</span>
+                      <span className="row-arrow" aria-hidden="true">
+                        →
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <ProjectDecisionSection projectId={project.id} />
+        </>
+      )}
+    </main>
+  );
 }

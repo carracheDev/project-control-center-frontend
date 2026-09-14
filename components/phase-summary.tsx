@@ -18,5 +18,15 @@ export function PhaseSummary({ phase, blockers, objectives, criteria, tasks, int
     ["Progression", progress], ["Bloqueurs", blockers], ["Objectifs", objectives], ["Critères", criteria], ["Tâches", tasks], ["Interviews", interviews], ["Preuves", evidence],
     ["Readiness", readiness ? (readiness.ready ? "READY" : "À compléter") : "—"], ["Gating", gating ? (gating.canValidate ? "CAN VALIDATE" : "BLOQUÉ") : "—"],
   ];
-  return <section className="my-6 grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-7" aria-label="Résumé de la phase">{items.map(([label, value]) => <article className="min-h-[76px] rounded-md border border-[var(--line)] bg-[var(--panel)] p-3" key={label}><span className="block text-[10px] text-[var(--muted)]">{label}</span><strong className="mt-2 block font-['Space_Grotesk'] text-base">{value}</strong></article>)}</section>;
+
+  return (
+    <section className="phase-summary-grid" aria-label="Résumé de la phase">
+      {items.map(([label, value]) => (
+        <article className="phase-summary-card" key={label}>
+          <span>{label}</span>
+          <strong>{value}</strong>
+        </article>
+      ))}
+    </section>
+  );
 }

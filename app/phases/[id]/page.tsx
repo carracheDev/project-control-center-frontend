@@ -259,12 +259,12 @@ export default function PhaseDetailPage() {
     <PhaseHeader phase={phase} project={project} />
     <PhaseSummary phase={phase} blockers={readinessBlockers + gatingBlockers} objectives={objectives.length} criteria={criteria.length} tasks={tasks.length} interviews={interviews.length} evidence={evidence.length} readiness={readiness} gating={gating} />
     <PhaseOverview phase={phase} workflow={workflow} readiness={readiness} gating={gating} validations={validations} isSubmitting={isSubmitting} onValidate={() => void validateCurrentPhase()} onShowBlockers={() => setActiveTab("overview")} />
-    <nav className="mt-6 flex flex-wrap items-center gap-2 overflow-x-auto rounded-xl border border-[var(--line)] bg-[var(--panel)] p-2 shadow-sm" aria-label="Navigation locale de la phase">
+    <nav className="phase-tab-nav" aria-label="Navigation locale de la phase">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type="button"
-          className={`rounded-md border px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? "border-[var(--teal)] bg-[#edf5f1] text-[var(--teal)]" : "border-transparent bg-transparent text-[var(--muted)] hover:border-[var(--line)] hover:bg-[#f7f5f0]"}`}
+          className={`phase-tab-button ${activeTab === tab.id ? "active" : ""}`}
           onClick={() => setActiveTab(tab.id)}
         >
           {tab.label}
@@ -325,7 +325,23 @@ export default function PhaseDetailPage() {
 }
 
 function EntitySection({ title, count, action, children }: { title: string; count: number; action: () => void; children: ReactNode }) {
-  return <section className="content-section entity-section"><div className="section-heading"><div><p className="eyebrow">Phase scope</p><h2>{title} <span className="count-label">{count}</span></h2></div><button className="button button-secondary" type="button" onClick={action}><span aria-hidden="true">+</span> Ajouter</button></div>{children}</section>;
+  return (
+    <section className="content-section entity-section">
+      <div className="phase-entity-header">
+        <div>
+          <p className="eyebrow">Phase scope</p>
+          <h2>
+            {title}
+            <span className="count-label">{count}</span>
+          </h2>
+        </div>
+        <button className="button button-secondary" type="button" onClick={action}>
+          <span aria-hidden="true">+</span> Ajouter
+        </button>
+      </div>
+      {children}
+    </section>
+  );
 }
 
 function EmptyInline({ label }: { label: string }) {
