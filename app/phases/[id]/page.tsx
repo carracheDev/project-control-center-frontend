@@ -10,19 +10,23 @@ import { InterviewForm } from "@/components/interview-form";
 import { EvidenceForm } from "@/components/evidence-form";
 import { CoverageRequirementForm } from "@/components/coverage-requirement-form";
 import { LoadingState } from "@/components/loading-state";
+import { PhaseHeader } from "@/components/phase-header";
+import { PhaseOverview } from "@/components/phase-overview";
+import { PhaseSummary } from "@/components/phase-summary";
 import { ObjectiveForm } from "@/components/objective-form";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
-import { StatusBadge } from "@/components/status-badge";
 import { TaskForm } from "@/components/task-form";
-import { createCoverageRequirement, createCriterion, createEvidence, createInterview, createObjective, createQuestionnaire, createTask, deleteCoverageRequirement, deleteCriterion, deleteEvidence, deleteInterview, deleteObjective, deleteQuestionnaire, deleteTask, getCoverage, getCoverageRequirements, getCriteria, getEvidence, getInterviews, getObjectives, getPhase, getPhaseGating, getPhaseReadiness, getPhaseValidations, getPhaseWorkflow, getQuestionnaires, getTasks, rejectEvidence, updateCoverageRequirement, updateCriterion, updateEvidence, updateInterview, updateObjective, updateQuestionnaire, updateTask, uploadEvidence, validatePhase, verifyEvidence } from "@/lib/api";
+import { createCoverageRequirement, createCriterion, createEvidence, createInterview, createObjective, createQuestionnaire, createTask, deleteCoverageRequirement, deleteCriterion, deleteEvidence, deleteInterview, deleteObjective, deleteQuestionnaire, deleteTask, getCoverage, getCoverageRequirements, getCriteria, getEvidence, getInterviews, getObjectives, getPhase, getPhaseGating, getPhaseReadiness, getPhaseValidations, getPhaseWorkflow, getProject, getQuestionnaires, getTasks, rejectEvidence, updateCoverageRequirement, updateCriterion, updateEvidence, updateInterview, updateObjective, updateQuestionnaire, updateTask, uploadEvidence, validatePhase, verifyEvidence } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import type { Criterion, CreateCoverageRequirementInput, CreateCriterionInput, CreateEvidenceInput, CreateInterviewInput, CreateObjectiveInput, CreateQuestionnaireInput, CreateTaskInput, CoverageRequirement, Evidence, GatingResult, Interview, Objective, Phase, PhaseCoverageResult, PhaseReadinessResult, PhaseValidation, PhaseWorkflowState, Questionnaire, Task } from "@/types/domain";
+import type { Criterion, CreateCoverageRequirementInput, CreateCriterionInput, CreateEvidenceInput, CreateInterviewInput, CreateObjectiveInput, CreateQuestionnaireInput, CreateTaskInput, CoverageRequirement, Evidence, GatingResult, Interview, Objective, Phase, PhaseCoverageResult, PhaseReadinessResult, PhaseValidation, PhaseWorkflowState, Project, Questionnaire, Task } from "@/types/domain";
 
 type FormKind = "objective" | "criterion" | "task" | "questionnaire" | "interview" | "evidence" | "coverage" | null;
+type PhaseTab = "overview" | "objectives" | "criteria" | "tasks" | "questionnaires" | "interviews" | "evidence" | "history";
 
 export default function PhaseDetailPage() {
   const params = useParams<{ id: string }>();
   const [phase, setPhase] = useState<Phase | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -41,10 +45,13 @@ export default function PhaseDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<PhaseTab>("overview");
 
   useEffect(() => {
     Promise.all([getPhase(params.id), getObjectives(params.id), getCriteria(params.id), getTasks(params.id), getQuestionnaires(params.id), getInterviews(params.id), getEvidence(params.id), getCoverageRequirements(params.id), getCoverage(params.id), getPhaseReadiness(params.id), getPhaseGating(params.id), getPhaseValidations(params.id), getPhaseWorkflow(params.id)])
-      .then(([loadedPhase, loadedObjectives, loadedCriteria, loadedTasks, loadedQuestionnaires, loadedInterviews, loadedEvidence, loadedCoverageRequirements, loadedCoverage, loadedReadiness, loadedGating, loadedValidations, loadedWorkflow]) => {
+      .then(async ([loadedPhase, loadedObjectives, loadedCriteria, loadedTasks, loadedQuestionnaires, loadedInterviews, loadedEvidence, loadedCoverageRequirements, loadedCoverage, loadedReadiness, loadedGating, loadedValidations, loadedWorkflow]) => {
+        const loadedProject = await getProject(loadedPhase.projectId);
+        setProject(loadedProject);
         setPhase(loadedPhase);
         setObjectives(loadedObjectives);
         setCriteria(loadedCriteria);
@@ -242,13 +249,30 @@ export default function PhaseDetailPage() {
   const editingEvidence = editingId ? evidence.find((item) => item.id === editingId) : undefined;
   const editingCoverageRequirement = editingId ? coverageRequirements.find((item) => item.id === editingId) : undefined;
 
-  return <main className="page-shell">
-    <Link className="back-link" href={`/projects/${phase.projectId}`}>← Retour au projet</Link>
+  const readinessBlockers = readiness?.blockers.length ?? 0;
+  const gatingBlockers = gating?.blockers.length ?? 0;
+  const tabs: { id: PhaseTab; label: string }[] = [
+    { id: "overview", label: "Vue d'ensemble" }, { id: "objectives", label: "Objectifs" }, { id: "criteria", label: "Critères" }, { id: "tasks", label: "Tâches" }, { id: "questionnaires", label: "Questionnaires" }, { id: "interviews", label: "Interviews" }, { id: "evidence", label: "Preuves" }, { id: "history", label: "Historique" },
+  ];
+
+  return <main className={`page-shell phase-page phase-tab-${activeTab}`}>
+    <PhaseHeader phase={phase} project={project} />
+    <PhaseSummary phase={phase} blockers={readinessBlockers + gatingBlockers} objectives={objectives.length} criteria={criteria.length} tasks={tasks.length} interviews={interviews.length} evidence={evidence.length} readiness={readiness} gating={gating} />
+    <PhaseOverview phase={phase} workflow={workflow} readiness={readiness} gating={gating} validations={validations} isSubmitting={isSubmitting} onValidate={() => void validateCurrentPhase()} onShowBlockers={() => setActiveTab("overview")} />
+    <nav className="mt-6 flex flex-wrap items-center gap-2 overflow-x-auto rounded-xl border border-[var(--line)] bg-[var(--panel)] p-2 shadow-sm" aria-label="Navigation locale de la phase">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          className={`rounded-md border px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? "border-[var(--teal)] bg-[#edf5f1] text-[var(--teal)]" : "border-transparent bg-transparent text-[var(--muted)] hover:border-[var(--line)] hover:bg-[#f7f5f0]"}`}
+          onClick={() => setActiveTab(tab.id)}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </nav>
     {success && <div className="alert alert-success" role="status">{success}</div>}
     {error && <div className="alert alert-error" role="alert">{error}</div>}
-    <section className="detail-hero"><div className="detail-title"><span className="phase-order phase-order-large" aria-hidden="true">{String(phase.order).padStart(2, "0")}</span><div><p className="eyebrow">Phase · statut fourni par le backend</p><h1>{phase.name}</h1><p>{phase.description || "Aucune description"}</p></div></div><StatusBadge status={phase.status} /></section>
-    {workflow?.locked && <div className="workflow-locked-alert" role="status"><strong>Phase verrouillée</strong><span>{workflow.reason || "Validez d'abord la phase précédente pour accéder à cette phase."}</span>{workflow.previousPhase && <small>Phase précédente : {workflow.previousPhase.name}</small>}</div>}
-    <section className="detail-facts"><div><span>Début</span><strong>{formatDate(phase.startDate)}</strong></div><div><span>Fin</span><strong>{formatDate(phase.endDate)}</strong></div><div><span>Deadline</span><strong>{formatDate(phase.deadline)}</strong></div></section>
     <section className="content-section coverage-section"><div className="section-heading"><div><p className="eyebrow">Mesure de recherche</p><h2>Couverture de recherche</h2></div><button className="button button-secondary" type="button" onClick={() => { setEditingId(null); setFormKind("coverage"); }}><span aria-hidden="true">+</span> Ajouter un requirement</button></div><div className="coverage-summary"><div><span>Interviews complétées</span><strong>{coverage?.completedInterviews ?? 0} / {coverage?.totalInterviews ?? 0}</strong></div><div><span>Requirements obligatoires satisfaits</span><strong>{coverage?.requirements.filter((requirement) => requirement.satisfied && coverageRequirements.find((item) => item.id === requirement.requirementId)?.required).length ?? 0} / {coverage?.requirements.filter((requirement) => coverageRequirements.find((item) => item.id === requirement.requirementId)?.required).length ?? 0}</strong></div><div><span>Information de couverture</span><strong>{coverage?.allRequiredSatisfied ? "Tous couverts" : "À compléter"}</strong></div></div>{formKind === "coverage" && <CoverageRequirementForm requirement={editingCoverageRequirement} objectives={objectives} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveCoverageRequirement} />}{coverageRequirements.length === 0 ? <EmptyInline label="Aucun requirement de couverture défini." /> : <div className="coverage-grid">{coverageRequirements.map((requirement) => { const result = coverage?.requirements.find((item) => item.requirementId === requirement.id); return <article className="coverage-card" key={requirement.id}><div className="coverage-card-heading"><div><h3>{requirement.name}</h3><p>{requirement.objective?.name || "Couverture de phase"}{requirement.required ? " · Obligatoire" : " · Optionnel"}</p></div><div className="row-controls"><button className="icon-button" type="button" onClick={() => { setEditingId(requirement.id); setFormKind("coverage"); }} aria-label="Modifier le requirement">✎</button><button className="icon-button icon-button-danger" type="button" onClick={() => void remove("coverage", requirement.id)} aria-label="Supprimer le requirement">×</button></div></div><strong className="coverage-numbers">{result?.coveredInterviews ?? 0} / {requirement.minimumInterviews}</strong><span className="coverage-percentage">{result?.percentage ?? 0} %</span><span className={`coverage-state ${result?.satisfied ? "coverage-state-satisfied" : "coverage-state-unsatisfied"}`}>{result?.satisfied ? "✓ Couvert" : "✕ Insuffisant"}</span></article>; })}</div>}</section>
     <EntitySection title="Objectifs" count={objectives.length} action={() => { setEditingId(null); setFormKind("objective"); }}>
       {formKind === "objective" && <ObjectiveForm objective={editingObjective} nextOrder={objectives.length + 1} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveObjective} />}
