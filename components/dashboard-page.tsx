@@ -79,9 +79,9 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
   ];
 
   return (
-    <section className="grid overflow-hidden border-y border-line bg-surface sm:grid-cols-2 lg:grid-cols-6" aria-label="Résumé global">
+    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6" aria-label="Résumé global">
       {metrics.map(([label, value, note, Icon, iconColor]) => (
-        <div className="flex min-h-24 items-center gap-3 border-b border-line px-4 py-4 last:border-b-0 sm:[&:nth-child(even)]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0" key={label}>
+        <div className="flex min-h-24 items-center gap-3 rounded-xl border border-line bg-surface px-4 py-4 shadow-[0_4px_14px_rgba(15,23,42,.035)]" key={label}>
           <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full bg-panel ${iconColor}`} aria-hidden="true"><Icon size={15} strokeWidth={2} /></span>
           <span className="grid gap-1">
             <span className="text-xs font-semibold text-ink">{label}</span>
@@ -107,7 +107,7 @@ function DashboardAnalytics({ projects }: { projects: ProjectDashboardCard[] }) 
     criticalRisks: result.criticalRisks + project.risks.critical,
   }), { tasks: 0, doneTasks: 0, blockedTasks: 0, criteria: 0, satisfiedCriteria: 0, pendingCriteria: 0, risks: 0, openRisks: 0, criticalRisks: 0 });
 
-  return <section className="grid gap-y-0 border-y border-line bg-white/50 lg:grid-cols-4 lg:divide-x lg:divide-line" aria-label="Analyses du portefeuille">
+  return <section className="grid gap-4 lg:grid-cols-2" aria-label="Analyses du portefeuille">
     <AnalyticsPanel icon={BarChart3} eyebrow="Exécution" title="État des tâches">
       <MetricBar label="Terminées" value={totals.doneTasks} total={totals.tasks} tone="success" />
       <MetricBar label="Bloquées" value={totals.blockedTasks} total={totals.tasks} tone="danger" />
@@ -130,7 +130,7 @@ function DashboardAnalytics({ projects }: { projects: ProjectDashboardCard[] }) 
 }
 
 function AnalyticsPanel({ icon: Icon, eyebrow, title, children }: { icon: LucideIcon; eyebrow: string; title: string; children: React.ReactNode }) {
-  return <section className="border-b border-line px-1 py-5 sm:px-5 lg:border-b-0"><div className="mb-5 flex items-start gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-panel text-brand-900"><Icon size={14} /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">{eyebrow}</p><h2 className="mt-1 font-display text-lg font-bold tracking-tight text-ink">{title}</h2></div></div><div className="space-y-4">{children}</div></section>;
+  return <section className="rounded-xl border border-line bg-surface p-5 shadow-[0_6px_18px_rgba(15,23,42,.035)]"><div className="mb-5 flex items-start gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-panel text-brand-900"><Icon size={14} /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">{eyebrow}</p><h2 className="mt-1 font-display text-lg font-bold tracking-tight text-ink">{title}</h2></div></div><div className="space-y-4">{children}</div></section>;
 }
 
 function MetricBar({ label, value, total, tone }: { label: string; value: number; total: number; tone: "success" | "warning" | "danger" }) {
