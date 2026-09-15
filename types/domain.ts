@@ -65,6 +65,63 @@ export type UpdatePhaseInput = Partial<CreatePhaseInput>;
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "BLOCKED";
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
 
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: "PROJECT_MANAGER" | "VIEWER";
+  user: { id?: string; email: string; globalRole: "ADMIN" | "USER"; isActive: boolean };
+}
+
+export type RiskStatus = "OPEN" | "MITIGATED" | "ACCEPTED" | "CLOSED";
+
+export interface Risk {
+  id: string;
+  projectId: string;
+  phaseId: string | null;
+  ownerId: string | null;
+  title: string;
+  description: string | null;
+  probability: number;
+  impact: number;
+  status: RiskStatus;
+  mitigation: string | null;
+  deadline: string | null;
+  owner?: { id: string; email: string } | null;
+  phase?: { id: string; name: string } | null;
+  automation?: { correctiveTaskCreated: boolean; taskId?: string };
+}
+
+export interface CreateRiskInput {
+  title: string;
+  description?: string;
+  phaseId?: string;
+  ownerId?: string;
+  probability?: number;
+  impact?: number;
+  status?: RiskStatus;
+  mitigation?: string;
+  deadline?: string;
+}
+
+export type UpdateRiskInput = Partial<CreateRiskInput> & { phaseId?: string | null; ownerId?: string | null; deadline?: string | null };
+
+export type NotificationStatus = "UNREAD" | "READ" | "RESOLVED";
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  projectId: string | null;
+  status: NotificationStatus;
+  title: string;
+  body: string;
+  entityType: string | null;
+  entityId: string | null;
+  createdAt: string;
+  readAt: string | null;
+  resolvedAt: string | null;
+}
+
 export interface Objective {
   id: string;
   phaseId: string;
@@ -122,6 +179,8 @@ export interface Task {
   phaseId: string;
   objectiveId: string | null;
   criterionId: string | null;
+  assigneeId: string | null;
+  assignee?: { id: string; email: string } | null;
   title: string;
   description: string | null;
   status: TaskStatus;
@@ -156,6 +215,7 @@ export interface DashboardAttentionItem {
   type: DashboardAttentionType;
   severity: DashboardAttentionSeverity;
   phaseId: string;
+  target: { type: "PHASE" | "TASK" | "CRITERION" | "COVERAGE" | "EVIDENCE"; id: string };
   message: string;
 }
 
@@ -170,6 +230,8 @@ export interface ProjectDashboardCard {
   coverage: { total: number; required: number; satisfied: number; unsatisfied: number };
   interviews: { total: number; completed: number };
   evidence: { total: number; verified: number; pending: number; rejected: number };
+  risks: { total: number; open: number; critical: number };
+  health: { score: number; status: "HEALTHY" | "AT_RISK" | "CRITICAL"; label: string };
   attention: { hasBlockers: boolean; items: DashboardAttentionItem[] };
 }
 
@@ -191,6 +253,9 @@ export interface ProjectDashboardResult {
     completedProjects: number;
     blockedProjects: number;
     projectsNeedingAttention: number;
+    health: { healthy: number; atRisk: number; critical: number };
+    openRisks: number;
+    criticalRisks: number;
   };
   projects: ProjectDashboardCard[];
   recentValidations: DashboardValidation[];
@@ -236,6 +301,7 @@ export interface CreateProjectDecisionInput {
 export interface CreateTaskInput {
   objectiveId?: string;
   criterionId?: string;
+  assigneeId?: string;
   title: string;
   description?: string;
   status?: TaskStatus;
@@ -246,6 +312,7 @@ export interface CreateTaskInput {
 export type UpdateTaskInput = Partial<CreateTaskInput> & {
   objectiveId?: string | null;
   criterionId?: string | null;
+  assigneeId?: string | null;
   deadline?: string | null;
 };
 

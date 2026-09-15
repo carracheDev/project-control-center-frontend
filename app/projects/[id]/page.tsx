@@ -10,6 +10,7 @@ import { PhaseForm } from "@/components/phase-form";
 import { ProjectForm } from "@/components/project-form";
 import { StatusBadge } from "@/components/status-badge";
 import { ProjectTimelineView } from "@/components/project-timeline";
+import { ProjectRiskSection } from "@/components/project-risk-section";
 import { createPhase, deleteProject, getProject, updateProject } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import type { CreatePhaseInput, CreateProjectInput, Project } from "@/types/domain";
@@ -170,6 +171,8 @@ export default function ProjectDetailPage() {
           )}
 
           <ProjectTimelineView projectId={project.id} />
+
+          <ProjectRiskSection projectId={project.id} phases={project.phases} />
 
           <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6">
             <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">

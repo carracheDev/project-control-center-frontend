@@ -24,7 +24,7 @@ export function PhaseSummary({ phase, blockers, objectives, criteria, tasks, int
   ];
 
   return (
-    <section className="my-5 grid overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:grid-cols-2 lg:grid-cols-5" aria-label="Résumé de la phase">
+    <section className="my-5 grid overflow-hidden rounded-xl border border-line bg-surface shadow-sm sm:grid-cols-2 lg:grid-cols-5" aria-label="Résumé de la phase">
       {items.map(([label, value, Icon, color]) => (
         <article className="flex min-h-20 items-center gap-3 border-b border-line px-4 py-3 last:border-b-0 sm:[&:nth-child(even)]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0" key={label}>
           <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-panel ${color}`}><Icon size={15} /></span>

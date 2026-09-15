@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { FolderKanban, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { NotificationSetup } from "@/components/notification-setup";
+import { NotificationCenter } from "@/components/notification-center";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/breadcrumbs";
 import { getPhase, getProject, logout } from "@/lib/api";
 
@@ -130,9 +131,7 @@ export function AppShell({ children }: AppShellProps) {
               <Breadcrumbs items={breadcrumbItems} />
             </div>
 
-            <span className="hidden rounded border border-[#c9d9d3] px-2 py-1 text-[9px] font-bold tracking-[.12em] text-[#4e7975] md:inline-flex">
-              PILOTAGE
-            </span>
+            <div className="flex items-center gap-3"><NotificationCenter /><span className="hidden rounded border border-[#c9d9d3] px-2 py-1 text-[9px] font-bold tracking-[.12em] text-[#4e7975] md:inline-flex">PILOTAGE</span></div>
           </div>
         </header>
 

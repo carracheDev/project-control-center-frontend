@@ -20,6 +20,11 @@ import type {
   Phase,
   PhaseWorkflowState,
   Project,
+  ProjectMember,
+  CreateRiskInput,
+  Risk,
+  UpdateRiskInput,
+  AppNotification,
   ProjectTimeline,
   Interview,
   Evidence,
@@ -130,6 +135,14 @@ export function getProjects(): Promise<Project[]> {
 export function getProject(id: string): Promise<Project> {
   return request<Project>(`/projects/${id}`);
 }
+export function getProjectMembers(id: string): Promise<ProjectMember[]> { return request<ProjectMember[]>(`/projects/${id}/members`); }
+export function getProjectRisks(id: string): Promise<Risk[]> { return request<Risk[]>(`/projects/${id}/risks`); }
+export function createProjectRisk(projectId: string, input: CreateRiskInput): Promise<Risk> { return request<Risk>(`/projects/${projectId}/risks`, { method: "POST", body: JSON.stringify(input) }); }
+export function updateRisk(id: string, input: UpdateRiskInput): Promise<Risk> { return request<Risk>(`/risks/${id}`, { method: "PATCH", body: JSON.stringify(input) }); }
+export function deleteRisk(id: string): Promise<Risk> { return request<Risk>(`/risks/${id}`, { method: "DELETE" }); }
+export function getNotifications(): Promise<AppNotification[]> { return request<AppNotification[]>("/notifications"); }
+export function markNotificationRead(id: string): Promise<AppNotification> { return request<AppNotification>(`/notifications/${id}/read`, { method: "PATCH" }); }
+export function resolveNotification(id: string): Promise<AppNotification> { return request<AppNotification>(`/notifications/${id}/resolve`, { method: "PATCH" }); }
 export function getProjectTimeline(id: string): Promise<ProjectTimeline> { return request<ProjectTimeline>(`/projects/${id}/timeline`); }
 
 export function createProjectDecision(projectId: string, input: CreateProjectDecisionInput): Promise<ProjectDecision> { return request<ProjectDecision>(`/projects/${projectId}/decisions`, { method: "POST", body: JSON.stringify(input) }); }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Activity, AlertCircle, ArrowRight, CheckCircle2, CircleCheck, Clock3, FolderKanban, Plus, type LucideIcon } from "lucide-react";
+import { Activity, AlertCircle, ArrowRight, BarChart3, CheckCircle2, CircleCheck, Clock3, FolderKanban, ListChecks, Plus, ShieldAlert, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { LoadingState } from "@/components/loading-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -43,6 +43,7 @@ export function DashboardPage() {
         dashboard && (
           <>
             <DashboardSummary summary={dashboard.summary} />
+            <DashboardAnalytics projects={dashboard.projects} />
 
             {dashboard.projects.length === 0 ? (
               <EmptyState
@@ -73,10 +74,12 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
     ["En cours", summary.activeProjects, "à suivre maintenant", Activity, "text-blue-600"],
     ["À traiter", summary.projectsNeedingAttention, "demandent une décision", AlertCircle, "text-warning"],
     ["Terminés", summary.completedProjects, "validation complète", CheckCircle2, "text-success"],
+    ["Santé critique", summary.health.critical, "projets à arbitrer", ShieldAlert, "text-danger"],
+    ["Risques critiques", summary.criticalRisks, "à traiter en priorité", ShieldAlert, "text-danger"],
   ];
 
   return (
-    <section className="grid overflow-hidden rounded-xl border border-line bg-surface shadow-[0_8px_24px_rgba(15,23,42,.05)] sm:grid-cols-2 lg:grid-cols-4" aria-label="Résumé global">
+    <section className="grid overflow-hidden rounded-xl border border-line bg-surface shadow-[0_8px_24px_rgba(15,23,42,.05)] sm:grid-cols-2 lg:grid-cols-6" aria-label="Résumé global">
       {metrics.map(([label, value, note, Icon, iconColor]) => (
         <div className="flex min-h-28 items-center gap-3 border-b border-line px-5 py-4 last:border-b-0 sm:[&:nth-child(even)]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0" key={label}>
           <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-panel ${iconColor}`} aria-hidden="true"><Icon size={17} strokeWidth={2} /></span>
@@ -89,6 +92,51 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
       ))}
     </section>
   );
+}
+
+function DashboardAnalytics({ projects }: { projects: ProjectDashboardCard[] }) {
+  const totals = projects.reduce((result, project) => ({
+    tasks: result.tasks + project.tasks.total,
+    doneTasks: result.doneTasks + project.tasks.done,
+    blockedTasks: result.blockedTasks + project.tasks.blocked,
+    criteria: result.criteria + project.criteria.required,
+    satisfiedCriteria: result.satisfiedCriteria + project.criteria.satisfied,
+    pendingCriteria: result.pendingCriteria + project.criteria.pending,
+    risks: result.risks + project.risks.total,
+    openRisks: result.openRisks + project.risks.open,
+    criticalRisks: result.criticalRisks + project.risks.critical,
+  }), { tasks: 0, doneTasks: 0, blockedTasks: 0, criteria: 0, satisfiedCriteria: 0, pendingCriteria: 0, risks: 0, openRisks: 0, criticalRisks: 0 });
+
+  return <section className="grid gap-4 lg:grid-cols-2" aria-label="Analyses du portefeuille">
+    <AnalyticsPanel icon={BarChart3} eyebrow="Exécution" title="État des tâches">
+      <MetricBar label="Terminées" value={totals.doneTasks} total={totals.tasks} tone="success" />
+      <MetricBar label="Bloquées" value={totals.blockedTasks} total={totals.tasks} tone="danger" />
+      <MetricBar label="À traiter" value={Math.max(0, totals.tasks - totals.doneTasks - totals.blockedTasks)} total={totals.tasks} tone="warning" />
+    </AnalyticsPanel>
+    <AnalyticsPanel icon={ShieldAlert} eyebrow="Exposition" title="Risques">
+      <MetricBar label="Critiques" value={totals.criticalRisks} total={totals.risks} tone="danger" />
+      <MetricBar label="Ouverts" value={totals.openRisks} total={totals.risks} tone="warning" />
+      <MetricBar label="Maîtrisés" value={Math.max(0, totals.risks - totals.openRisks)} total={totals.risks} tone="success" />
+    </AnalyticsPanel>
+    <AnalyticsPanel icon={ListChecks} eyebrow="Validation" title="Critères obligatoires">
+      <MetricBar label="Satisfaits" value={totals.satisfiedCriteria} total={totals.criteria} tone="success" />
+      <MetricBar label="En attente" value={totals.pendingCriteria} total={totals.criteria} tone="warning" />
+      <MetricBar label="Autres à corriger" value={Math.max(0, totals.criteria - totals.satisfiedCriteria - totals.pendingCriteria)} total={totals.criteria} tone="danger" />
+    </AnalyticsPanel>
+    <AnalyticsPanel icon={CheckCircle2} eyebrow="Avancement" title="Phases validées">
+      {projects.length === 0 ? <p className="text-sm text-muted">Aucun projet à analyser.</p> : projects.map((project) => <MetricBar key={project.id} label={project.name} value={project.progress.completedPhases} total={project.progress.totalPhases} tone={project.health.status === "CRITICAL" ? "danger" : project.health.status === "AT_RISK" ? "warning" : "success"} />)}
+    </AnalyticsPanel>
+  </section>;
+}
+
+function AnalyticsPanel({ icon: Icon, eyebrow, title, children }: { icon: LucideIcon; eyebrow: string; title: string; children: React.ReactNode }) {
+  return <section className="rounded-xl border border-line bg-surface p-5 shadow-[0_8px_24px_rgba(15,23,42,.05)]"><div className="mb-5 flex items-start gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-panel text-brand-900"><Icon size={16} /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">{eyebrow}</p><h2 className="mt-1 font-display text-lg font-bold tracking-tight text-ink">{title}</h2></div></div><div className="space-y-4">{children}</div></section>;
+}
+
+function MetricBar({ label, value, total, tone }: { label: string; value: number; total: number; tone: "success" | "warning" | "danger" }) {
+  const width = total === 0 ? 0 : Math.round((value / total) * 100);
+  const colors = { success: "bg-success", warning: "bg-accent-400", danger: "bg-danger" } as const;
+  return <div><div className="mb-1 flex items-center justify-between gap-3 text-xs"><span className="truncate text-muted">{label}</span><strong className="shrink-0 text-ink">{value} <span className="font-normal text-muted">({width}%)</span></strong></div><div className="h-2 overflow-hidden rounded-full bg-line"><span className={`block h-full rounded-full ${colors[tone]}`} style={{ width: `${width}%` }} /></div></div>;
 }
 
 function DashboardAttention({ items }: { items: (DashboardAttentionItem & { projectId: string; projectName: string })[] }) {
@@ -107,7 +155,7 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
       ) : (
         <div className="border-t border-line">
           {items.slice(0, 6).map((item, index) => (
-            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-2 py-3 transition hover:border-accent-400 hover:bg-panel" href={`/phases/${item.phaseId}`} key={`${item.projectId}-${item.phaseId}-${item.type}-${index}`}>
+            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-2 py-3 transition hover:border-accent-400 hover:bg-panel" href={attentionHref(item)} key={`${item.projectId}-${item.phaseId}-${item.type}-${item.target.id}-${index}`}>
               <span className={`grid h-8 w-8 place-items-center rounded-lg ${item.severity === "HIGH" ? "bg-red-50 text-danger" : "bg-amber-50 text-warning"}`} aria-hidden="true">
                 {item.severity === "HIGH" ? <AlertCircle size={16} /> : <Clock3 size={16} />}
               </span>
@@ -122,6 +170,11 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
       )}
     </section>
   );
+}
+
+function attentionHref(item: DashboardAttentionItem): string {
+  const tabs = { TASK: "tasks", CRITERION: "criteria", COVERAGE: "overview", EVIDENCE: "evidence", PHASE: "overview" } as const;
+  return `/phases/${item.phaseId}?tab=${tabs[item.target.type] ?? "overview"}&focus=${encodeURIComponent(item.target.id)}`;
 }
 
 function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }) {
@@ -145,12 +198,22 @@ function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }
               <span className="block h-full rounded-full bg-accent-400" style={{ width: `${project.progress.percentage}%` }} />
             </span>
             <strong className="text-right text-[13px] font-bold text-ink">{project.progress.percentage}%</strong>
+            <HealthBadge health={project.health} />
             {project.phase && <StatusBadge status={project.phase.status} />}
           </Link>
         ))}
       </div>
     </section>
   );
+}
+
+function HealthBadge({ health }: { health: ProjectDashboardCard["health"] }) {
+  const styles = {
+    HEALTHY: "bg-emerald-50 text-success",
+    AT_RISK: "bg-amber-50 text-warning",
+    CRITICAL: "bg-red-50 text-danger",
+  } as const;
+  return <span className={`rounded px-2 py-1 text-[10px] font-bold ${styles[health.status]}`} title={`Score de santé : ${health.score}/100`}>{health.label}</span>;
 }
 
 function RecentValidations({ validations }: { validations: ProjectDashboardResult["recentValidations"] }) {

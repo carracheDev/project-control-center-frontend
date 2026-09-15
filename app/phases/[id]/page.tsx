@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ClipboardList, FileCheck, History, LayoutDashboard, ListChecks, ListTodo, MessagesSquare, Plus, Target, type LucideIcon } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { CriterionForm } from "@/components/criterion-form";
@@ -17,20 +17,23 @@ import { PhaseSummary } from "@/components/phase-summary";
 import { ObjectiveForm } from "@/components/objective-form";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { TaskForm } from "@/components/task-form";
-import { createCoverageRequirement, createCriterion, createEvidence, createInterview, createObjective, createQuestionnaire, createTask, deleteCoverageRequirement, deleteCriterion, deleteEvidence, deleteInterview, deleteObjective, deleteQuestionnaire, deleteTask, getCoverage, getCoverageRequirements, getCriteria, getEvidence, getInterviews, getObjectives, getPhase, getPhaseGating, getPhaseReadiness, getPhaseValidations, getPhaseWorkflow, getProject, getQuestionnaires, getTasks, rejectEvidence, updateCoverageRequirement, updateCriterion, updateEvidence, updateInterview, updateObjective, updateQuestionnaire, updateTask, uploadEvidence, validatePhase, verifyEvidence } from "@/lib/api";
+import { TaskKanban } from "@/components/task-kanban";
+import { createCoverageRequirement, createCriterion, createEvidence, createInterview, createObjective, createQuestionnaire, createTask, deleteCoverageRequirement, deleteCriterion, deleteEvidence, deleteInterview, deleteObjective, deleteQuestionnaire, deleteTask, getCoverage, getCoverageRequirements, getCriteria, getEvidence, getInterviews, getObjectives, getPhase, getPhaseGating, getPhaseReadiness, getPhaseValidations, getPhaseWorkflow, getProject, getProjectMembers, getQuestionnaires, getTasks, rejectEvidence, updateCoverageRequirement, updateCriterion, updateEvidence, updateInterview, updateObjective, updateQuestionnaire, updateTask, uploadEvidence, validatePhase, verifyEvidence } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import type { Criterion, CreateCoverageRequirementInput, CreateCriterionInput, CreateEvidenceInput, CreateInterviewInput, CreateObjectiveInput, CreateQuestionnaireInput, CreateTaskInput, CoverageRequirement, Evidence, GatingResult, Interview, Objective, Phase, PhaseCoverageResult, PhaseReadinessResult, PhaseValidation, PhaseWorkflowState, Project, Questionnaire, Task } from "@/types/domain";
+import type { Criterion, CreateCoverageRequirementInput, CreateCriterionInput, CreateEvidenceInput, CreateInterviewInput, CreateObjectiveInput, CreateQuestionnaireInput, CreateTaskInput, CoverageRequirement, Evidence, GatingResult, Interview, Objective, Phase, PhaseCoverageResult, PhaseReadinessResult, PhaseValidation, PhaseWorkflowState, Project, ProjectMember, Questionnaire, Task } from "@/types/domain";
 
 type FormKind = "objective" | "criterion" | "task" | "questionnaire" | "interview" | "evidence" | "coverage" | null;
 type PhaseTab = "overview" | "objectives" | "criteria" | "tasks" | "questionnaires" | "interviews" | "evidence" | "history";
 
 export default function PhaseDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const [phase, setPhase] = useState<Phase | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [members, setMembers] = useState<ProjectMember[]>([]);
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [evidence, setEvidence] = useState<Evidence[]>([]);
@@ -46,17 +49,23 @@ export default function PhaseDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<PhaseTab>("overview");
+  const [activeTab, setActiveTab] = useState<PhaseTab>(() => {
+    const requestedTab = searchParams.get("tab");
+    const validTabs: PhaseTab[] = ["overview", "objectives", "criteria", "tasks", "questionnaires", "interviews", "evidence", "history"];
+    return requestedTab && validTabs.includes(requestedTab as PhaseTab) ? requestedTab as PhaseTab : "overview";
+  });
 
   useEffect(() => {
     Promise.all([getPhase(params.id), getObjectives(params.id), getCriteria(params.id), getTasks(params.id), getQuestionnaires(params.id), getInterviews(params.id), getEvidence(params.id), getCoverageRequirements(params.id), getCoverage(params.id), getPhaseReadiness(params.id), getPhaseGating(params.id), getPhaseValidations(params.id), getPhaseWorkflow(params.id)])
       .then(async ([loadedPhase, loadedObjectives, loadedCriteria, loadedTasks, loadedQuestionnaires, loadedInterviews, loadedEvidence, loadedCoverageRequirements, loadedCoverage, loadedReadiness, loadedGating, loadedValidations, loadedWorkflow]) => {
         const loadedProject = await getProject(loadedPhase.projectId);
+        const loadedMembers = await getProjectMembers(loadedPhase.projectId);
         setProject(loadedProject);
         setPhase(loadedPhase);
         setObjectives(loadedObjectives);
         setCriteria(loadedCriteria);
         setTasks(loadedTasks);
+        setMembers(loadedMembers);
         setQuestionnaires(loadedQuestionnaires);
         setInterviews(loadedInterviews);
         setEvidence(loadedEvidence);
@@ -148,6 +157,18 @@ export default function PhaseDetailPage() {
       closeForm();
     } catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Impossible d’enregistrer la tâche"); }
     finally { setIsSubmitting(false); }
+  }
+
+  async function changeTaskStatus(task: Task, status: Task["status"]) {
+    const previousTasks = tasks;
+    setTasks((items) => items.map((item) => item.id === task.id ? { ...item, status } : item));
+    try {
+      const updated = await updateTask(task.id, { status });
+      setTasks((items) => items.map((item) => item.id === task.id ? updated : item));
+    } catch (requestError) {
+      setTasks(previousTasks);
+      setError(requestError instanceof Error ? requestError.message : "Impossible de changer le statut de la tâche");
+    }
   }
 
   async function saveQuestionnaire(input: CreateQuestionnaireInput) {
@@ -284,8 +305,8 @@ export default function PhaseDetailPage() {
       {criteria.length === 0 ? <EmptyInline label="Aucun critère défini." /> : <div className="divide-y divide-line">{criteria.map((criterion) => <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start" key={criterion.id}><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-panel text-xs font-bold text-brand-900">{String(criterion.order).padStart(2, "0")}</span><div className="min-w-0 flex-1"><h3>{criterion.name} {criterion.required && <span className="ml-2 rounded bg-amber-50 px-2 py-1 text-[10px] font-bold text-warning">Requis</span>}</h3><p>{criterion.description || "Aucune description"}</p><CriterionAssessmentControls criterion={criterion} evidence={evidence} onChanged={(assessment) => { setCriteria((items) => items.map((item) => item.id === criterion.id ? { ...item, assessment } : item)); void refreshDiagnostics().catch((requestError: Error) => setError(requestError.message)); }} /></div><div className="flex shrink-0 items-center gap-2"><button className="rounded-md border border-line px-2 py-1 text-xs text-muted" type="button" onClick={() => { setEditingId(criterion.id); setFormKind("criterion"); }} aria-label="Modifier le critère">✎</button><button className="rounded-md border border-red-200 px-2 py-1 text-xs text-danger" type="button" onClick={() => void remove("criterion", criterion.id)} aria-label="Supprimer le critère">×</button></div></div>)}</div>}
     </EntitySection>
     <EntitySection activeTab={activeTab} title="Tâches" count={tasks.length} action={() => { setEditingId(null); setFormKind("task"); }}>
-      {formKind === "task" && <TaskForm task={editingTask} objectives={objectives} criteria={criteria} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveTask} />}
-      {tasks.length === 0 ? <EmptyInline label="Aucune tâche définie." /> : <div className="divide-y divide-line">{tasks.map((task) => <div className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start" key={task.id}><div className="min-w-0 flex-1"><h3>{task.title}</h3><p>{task.description || "Aucune description"}</p></div><div className="flex flex-wrap items-center gap-2 text-xs text-muted"><span className={`task-status task-${task.status.toLowerCase()}`}>{task.status.replace("_", " ")}</span><span className={`task-priority priority-${task.priority.toLowerCase()}`}>{task.priority}</span><span>{formatDate(task.deadline)}</span></div><div className="flex shrink-0 items-center gap-2"><button className="rounded-md border border-line px-2 py-1 text-xs text-muted" type="button" onClick={() => { setEditingId(task.id); setFormKind("task"); }} aria-label="Modifier la tâche">✎</button><button className="rounded-md border border-red-200 px-2 py-1 text-xs text-danger" type="button" onClick={() => void remove("task", task.id)} aria-label="Supprimer la tâche">×</button></div></div>)}</div>}
+      {formKind === "task" && <TaskForm task={editingTask} objectives={objectives} criteria={criteria} members={members} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveTask} />}
+      {tasks.length === 0 ? <EmptyInline label="Aucune tâche définie." /> : <TaskKanban tasks={tasks} onStatusChange={changeTaskStatus} onEdit={(task) => { setEditingId(task.id); setFormKind("task"); }} onDelete={(task) => void remove("task", task.id)} />}
     </EntitySection>
     <EntitySection activeTab={activeTab} title="Questionnaires" count={questionnaires.length} action={() => { setEditingId(null); setFormKind("questionnaire"); }}>
       {formKind === "questionnaire" && <QuestionnaireForm questionnaire={editingQuestionnaire} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveQuestionnaire} />}
