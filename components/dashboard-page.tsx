@@ -141,17 +141,17 @@ function MetricBar({ label, value, total, tone }: { label: string; value: number
 
 function DashboardAttention({ items }: { items: (DashboardAttentionItem & { projectId: string; projectName: string })[] }) {
   return (
-    <section className="border-y border-l-2 border-l-accent-400 bg-transparent px-0 pb-3 pt-5">
+    <section className="rounded-[10px] border border-[#dbe3eb] border-l-4 border-l-accent-400 bg-white px-5 pb-4 pt-5 shadow-[0_1px_2px_rgba(15,23,42,.06),0_5px_14px_rgba(15,23,42,.045)] sm:px-6">
       <div className="mb-3 flex items-end justify-between gap-5">
         <div>
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">À traiter</p>
           <h2 className="font-display text-xl font-bold tracking-tight text-ink">Points d’attention</h2>
         </div>
-        <span className="bg-panel px-2.5 py-1 text-[10px] font-bold text-muted">{items.length} priorité{items.length > 1 ? "s" : ""}</span>
+        <span className="rounded-full bg-panel px-2.5 py-1 text-[10px] font-bold text-muted">{items.length} priorité{items.length > 1 ? "s" : ""}</span>
       </div>
 
       {items.length === 0 ? (
-        <p className="border-t border-line py-5 text-sm text-muted">Aucun élément ne nécessite d’attention.</p>
+        <div className="border-t border-line py-6"><p className="text-sm font-medium text-ink">Tout est sous contrôle</p><p className="mt-1 text-xs text-muted">Aucun élément ne nécessite d’attention pour le moment.</p></div>
       ) : (
         <div className="border-t border-line">
           {items.slice(0, 6).map((item, index) => (
