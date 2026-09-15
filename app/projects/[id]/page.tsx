@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, CircleDot, Layers3, Plus } from "lucide-react";
 import { LoadingState } from "@/components/loading-state";
 import { ProjectDecisionSection } from "@/components/project-decision-section";
 import { PhaseForm } from "@/components/phase-form";
@@ -126,30 +126,30 @@ export default function ProjectDetailPage() {
           </section>
 
           <section className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-5" aria-label="Résumé du projet">
-            <div className="bg-surface p-4">
-              <span>Début</span>
-              <strong>{formatDate(project.startDate)}</strong>
+            <div className="flex gap-3 bg-surface p-4">
+              <CalendarDays className="mt-0.5 shrink-0 text-muted" size={16} />
+              <span><span className="block text-xs text-muted">Début</span><strong className="mt-1 block text-sm text-ink">{formatDate(project.startDate)}</strong></span>
             </div>
-            <div className="bg-surface p-4">
-              <span>Fin</span>
-              <strong>{formatDate(project.endDate)}</strong>
+            <div className="flex gap-3 bg-surface p-4">
+              <CalendarDays className="mt-0.5 shrink-0 text-muted" size={16} />
+              <span><span className="block text-xs text-muted">Fin</span><strong className="mt-1 block text-sm text-ink">{formatDate(project.endDate)}</strong></span>
             </div>
-            <div className="bg-surface p-4">
-              <span>Phases</span>
-              <strong>{project.phases.length}</strong>
+            <div className="flex gap-3 bg-surface p-4">
+              <Layers3 className="mt-0.5 shrink-0 text-muted" size={16} />
+              <span><span className="block text-xs text-muted">Phases</span><strong className="mt-1 block text-sm text-ink">{project.phases.length}</strong></span>
             </div>
-            <div className="bg-surface p-4">
-              <span>Validées</span>
-              <strong>{validatedPhases}</strong>
+            <div className="flex gap-3 bg-surface p-4">
+              <CheckCircle2 className="mt-0.5 shrink-0 text-success" size={16} />
+              <span><span className="block text-xs text-muted">Validées</span><strong className="mt-1 block text-sm text-ink">{validatedPhases}</strong></span>
             </div>
-            <div className="bg-surface p-4">
-              <span>Blocages</span>
-              <strong>{blockers}</strong>
+            <div className="flex gap-3 bg-surface p-4">
+              <AlertTriangle className={`mt-0.5 shrink-0 ${blockers ? "text-danger" : "text-muted"}`} size={16} />
+              <span><span className="block text-xs text-muted">Blocages</span><strong className="mt-1 block text-sm text-ink">{blockers}</strong></span>
             </div>
           </section>
 
           {nextPhase && (
-            <section className="flex flex-col justify-between gap-5 rounded-xl border border-amber-200 bg-[#fff8ec] p-5 sm:flex-row sm:items-center" aria-label="Prochaine action">
+            <section className="flex flex-col justify-between gap-5 rounded-xl border border-amber-200 bg-[#fff8ec] p-5 transition hover:border-accent-400 hover:shadow-[0_8px_20px_rgba(245,158,11,.12)] sm:flex-row sm:items-center" aria-label="Prochaine action">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[.14em] text-warning">Prochaine action</p>
                 <h2 className="mt-1 font-display text-xl font-semibold text-ink">{nextPhase.name}</h2>
