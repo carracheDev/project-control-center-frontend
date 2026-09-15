@@ -89,7 +89,7 @@ export function AppShell({ children }: AppShellProps) {
                 }`}
                 aria-current={isActive ? "page" : undefined}
               >
-                <span aria-hidden="true" className={isActive ? "text-[var(--accent)]" : "text-[#7182a0]"}>
+                <span aria-hidden="true" className={isActive ? "text-accent-400" : "text-[#7182a0]"}>
                   {item.label === "Vue d'ensemble" ? "◈" : "▤"}
                 </span>
                 {item.label}
