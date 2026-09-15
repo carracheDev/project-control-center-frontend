@@ -43,6 +43,10 @@ export function DashboardPage() {
           <>
             <DashboardSummary summary={dashboard.summary} />
 
+            {dashboard.projects.length > 0 && (
+              <DashboardFocusProject project={dashboard.projects[0]} />
+            )}
+
             {dashboard.projects.length === 0 ? (
               <EmptyState
                 title="Aucun projet n’est encore enregistré"
@@ -101,6 +105,49 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
           <span className="metric-note">{note}</span>
         </article>
       ))}
+    </section>
+  );
+}
+
+function DashboardFocusProject({ project }: { project: ProjectDashboardCard }) {
+  const nextAction = project.attention.items[0]?.message ?? "Aucune attention particulière";
+
+  return (
+    <section className="dashboard-focus-panel" aria-label="Projet actif">
+      <div className="dashboard-focus-header">
+        <div>
+          <p className="eyebrow">Projet actif</p>
+          <h2>{project.name}</h2>
+        </div>
+        {project.phase && <StatusBadge status={project.phase.status} />}
+      </div>
+
+      <p className="project-card-description">{project.description || "Aucune description"}</p>
+
+      <div className="dashboard-focus-meta">
+        <div>
+          <span>Phase actuelle</span>
+          <strong>{project.phase ? `${String(project.phase.order).padStart(2, "0")} · ${project.phase.name}` : "Aucune phase"}</strong>
+        </div>
+        <div>
+          <span>Progression</span>
+          <strong>{project.progress.percentage}%</strong>
+        </div>
+        <div>
+          <span>Prochaine action</span>
+          <strong>{nextAction}</strong>
+        </div>
+      </div>
+
+      <div className="dashboard-progress-block">
+        <div className="dashboard-progress-header">
+          <span>Progression globale</span>
+          <strong>{project.progress.completedPhases}/{project.progress.totalPhases} phases validées</strong>
+        </div>
+        <div className="dashboard-progress-track">
+          <span style={{ width: `${project.progress.percentage}%` }} />
+        </div>
+      </div>
     </section>
   );
 }

@@ -80,6 +80,7 @@ export default function ProjectDetailPage() {
 
   const validatedPhases = project.phases.filter((phase) => phase.status === "VALIDATED").length;
   const blockers = project.phases.filter((phase) => phase.status === "LOCKED" || phase.status === "REOPENED").length;
+  const nextPhase = project.phases.find((phase) => phase.status !== "VALIDATED") ?? project.phases[project.phases.length - 1] ?? null;
 
   return (
     <main className="page-shell">
@@ -145,6 +146,27 @@ export default function ProjectDetailPage() {
               <strong>{blockers}</strong>
             </div>
           </section>
+
+          {nextPhase && (
+            <section className="project-next-action" aria-label="Prochaine action">
+              <div>
+                <p className="eyebrow">Prochaine action</p>
+                <h2>{nextPhase.name}</h2>
+                <p>
+                  {nextPhase.status === "LOCKED" || nextPhase.status === "REOPENED"
+                    ? "Cette phase demande une action corrective avant de reprendre le cours du projet."
+                    : "La phase suivante est le point d’attention principal pour ce projet."}
+                </p>
+              </div>
+              <div className="project-next-action-meta">
+                <span>{String(nextPhase.order).padStart(2, "0")} · {nextPhase.status}</span>
+                <strong>{formatDate(nextPhase.deadline)}</strong>
+              </div>
+              <Link className="button button-primary" href={`/phases/${nextPhase.id}`}>
+                Ouvrir la phase
+              </Link>
+            </section>
+          )}
 
           <ProjectTimelineView projectId={project.id} />
 
