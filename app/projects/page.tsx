@@ -13,7 +13,7 @@ import type { Project } from "@/types/domain";
 
 export default function ProjectsPage() {
   return (
-    <Suspense fallback={<main className="page-shell"><LoadingState label="Chargement des projets..." /></main>}>
+    <Suspense fallback={<main><LoadingState label="Chargement des projets..." /></main>}>
       <ProjectsContent />
     </Suspense>
   );
