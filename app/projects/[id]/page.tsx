@@ -117,10 +117,10 @@ export default function ProjectDetailPage() {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button className="rounded-lg border border-line bg-panel px-3 py-2 text-sm font-semibold text-brand-900" type="button" onClick={() => setIsEditing(true)}>
+              <button className="rounded-lg border border-line bg-panel px-3 py-2 text-sm font-semibold text-brand-900 transition-colors duration-200 hover:border-brand-900 hover:bg-brand-900 hover:text-white" type="button" onClick={() => setIsEditing(true)}>
                 Modifier
               </button>
-              <button className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-danger disabled:opacity-50" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>
+              <button className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-danger transition-colors duration-200 hover:border-danger hover:bg-danger hover:text-white disabled:opacity-50" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>
                 Supprimer
               </button>
             </div>
