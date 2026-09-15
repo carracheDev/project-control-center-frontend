@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, CircleDot, Layers3, Plus } from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, Layers3, Plus } from "lucide-react";
 import { LoadingState } from "@/components/loading-state";
 import { ProjectDecisionSection } from "@/components/project-decision-section";
 import { PhaseForm } from "@/components/phase-form";
