@@ -24,5 +24,5 @@ export default function NewProjectPage() {
     }
   }
 
-  return <main className="page-shell narrow-page"><Link className="back-link" href="/projects">← Retour aux projets</Link><section className="page-heading compact-heading"><div><p className="eyebrow">Nouveau projet</p><h1>Créer un espace de pilotage</h1><p className="page-lede">Commencez par poser le cadre général. Les phases pourront être ajoutées ensuite.</p></div></section><ProjectForm error={error} isSubmitting={isSubmitting} onCancel={() => router.push("/projects")} onSubmit={handleSubmit} /></main>;
+  return <main className="mx-auto max-w-3xl space-y-6"><Link className="text-sm font-semibold text-muted hover:text-brand-900" href="/projects">← Retour aux projets</Link><section><p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Nouveau projet</p><h1 className="mt-2 font-display text-3xl font-semibold text-ink">Créer un espace de pilotage</h1><p className="mt-2 text-sm text-muted">Commencez par poser le cadre général. Les phases pourront être ajoutées ensuite.</p></section><ProjectForm error={error} isSubmitting={isSubmitting} onCancel={() => router.push("/projects")} onSubmit={handleSubmit} /></main>;
 }

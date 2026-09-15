@@ -47,7 +47,7 @@ export function AppShell({ children }: AppShellProps) {
   const breadcrumbItems = buildBreadcrumbItems(pathname, context);
 
   return (
-    <div className="flex min-h-screen bg-[var(--paper)] text-[var(--ink)]">
+    <div className="flex min-h-screen bg-canvas text-ink">
       <NotificationSetup />
 
       {isMobileNavOpen && (
@@ -60,15 +60,15 @@ export function AppShell({ children }: AppShellProps) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[248px] shrink-0 flex-col bg-[var(--teal)] px-4 py-4 text-[#eaf4ef] transition-transform duration-200 md:static md:flex md:px-[18px] md:py-7 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[248px] shrink-0 flex-col bg-brand-900 px-4 py-4 text-[#f8fafc] transition-transform duration-200 md:static md:flex md:px-[18px] md:py-7 ${
           isMobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         <Link className="flex items-center gap-3 pb-4 md:pb-11" href="/dashboard" onClick={() => setIsMobileNavOpen(false)}>
-          <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-[#ecb86b] font-['Space_Grotesk'] font-bold text-[var(--teal)]" aria-hidden="true">P</span>
+          <span className="grid h-8 w-8 place-items-center rounded-[9px] bg-accent-400 font-display font-bold text-brand-900" aria-hidden="true">P</span>
           <span className="leading-none">
             <strong className="block text-[15px] tracking-[0.06em]">PCC</strong>
-            <small className="mt-1 block text-[10px] text-[#9cb7b3]">Project Control Center</small>
+            <small className="mt-1 block text-[10px] text-[#93a4c4]">Project Control Center</small>
           </span>
         </Link>
 
@@ -85,11 +85,11 @@ export function AppShell({ children }: AppShellProps) {
                 href={item.href}
                 onClick={() => setIsMobileNavOpen(false)}
                 className={`flex flex-1 items-center justify-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold transition-colors md:justify-start ${
-                  isActive ? "bg-white/10 text-white" : "text-[#a8c2bd] hover:bg-white/[0.04] hover:text-white"
+                  isActive ? "bg-[#22304d] text-white" : "text-[#a8b7d1] hover:bg-white/[0.04] hover:text-white"
                 }`}
                 aria-current={isActive ? "page" : undefined}
               >
-                <span aria-hidden="true" className={isActive ? "text-[#ecb86b]" : "text-[#80a39e]"}>
+                <span aria-hidden="true" className={isActive ? "text-[var(--accent)]" : "text-[#7182a0]"}>
                   {item.label === "Vue d'ensemble" ? "◈" : "▤"}
                 </span>
                 {item.label}
@@ -98,11 +98,11 @@ export function AppShell({ children }: AppShellProps) {
           })}
         </nav>
 
-        <div className="mt-auto hidden items-center gap-2 border-t border-white/10 px-3 py-3 text-[11px] text-[#91aaa7] md:flex">
-          <span className="h-2.5 w-2.5 rounded-full bg-[#70cf9c] shadow-[0_0_0_4px_rgba(112,207,156,0.14)]" aria-hidden="true" />
+        <div className="mt-auto hidden items-center gap-2 border-t border-white/10 px-3 py-3 text-[11px] text-[#94a3c1] md:flex">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#26d7a1] shadow-[0_0_0_4px_rgba(38,215,161,0.14)]" aria-hidden="true" />
           <span>API locale connectée</span>
           <button
-            className="ml-auto border-0 bg-transparent p-0 text-[11px] text-[#b9cfca]"
+            className="ml-auto border-0 bg-transparent p-0 text-[11px] text-[#c5d0e5]"
             type="button"
             title="Se déconnecter"
             onClick={() => {
@@ -115,13 +115,13 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[rgba(255,253,249,0.96)] backdrop-blur-sm">
+        <header className="sticky top-0 z-20 border-b border-line bg-[rgba(255,253,249,0.96)] backdrop-blur-sm">
           <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
                 aria-label="Ouvrir le menu"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[var(--line)] bg-[var(--panel)] text-sm text-[var(--ink)] md:hidden"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-panel text-sm text-ink md:hidden"
                 onClick={() => setIsMobileNavOpen((current) => !current)}
               >
                 {isMobileNavOpen ? "✕" : "☰"}

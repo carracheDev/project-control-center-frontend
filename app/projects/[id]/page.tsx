@@ -75,94 +75,94 @@ export default function ProjectDetailPage() {
     }
   }
 
-  if (isLoading) return <main className="page-shell"><LoadingState label="Chargement du projet..." /></main>;
-  if (!project) return <main className="page-shell"><div className="alert alert-error">{error || "Projet introuvable"}</div><Link className="back-link" href="/projects">← Retour aux projets</Link></main>;
+  if (isLoading) return <main><LoadingState label="Chargement du projet..." /></main>;
+  if (!project) return <main><div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-danger">{error || "Projet introuvable"}</div><Link className="mt-4 inline-block text-sm font-semibold text-muted" href="/projects">← Retour aux projets</Link></main>;
 
   const validatedPhases = project.phases.filter((phase) => phase.status === "VALIDATED").length;
   const blockers = project.phases.filter((phase) => phase.status === "LOCKED" || phase.status === "REOPENED").length;
   const nextPhase = project.phases.find((phase) => phase.status !== "VALIDATED") ?? project.phases[project.phases.length - 1] ?? null;
 
   return (
-    <main className="page-shell">
-      <Link className="back-link" href="/projects">
+    <main className="space-y-6">
+      <Link className="inline-block text-sm font-semibold text-muted hover:text-brand-900" href="/projects">
         ← Tous les projets
       </Link>
 
-      {success && <div className="alert alert-success" role="status">{success}</div>}
-      {error && <div className="alert alert-error" role="alert">{error}</div>}
+      {success && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-success" role="status">{success}</div>}
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-danger" role="alert">{error}</div>}
 
       {isEditing ? (
         <>
-          <section className="page-heading compact-heading">
+          <section>
             <div>
-              <p className="eyebrow">Modifier le projet</p>
-              <h1>{project.name}</h1>
+              <p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Modifier le projet</p>
+              <h1 className="mt-2 font-display text-3xl font-semibold text-ink">{project.name}</h1>
             </div>
           </section>
           <ProjectForm error={null} isSubmitting={isSubmitting} onCancel={() => setIsEditing(false)} onSubmit={handleUpdate} project={project} />
         </>
       ) : (
         <>
-          <section className="detail-hero">
-            <div className="detail-title">
-              <span className="project-mark project-mark-large" aria-hidden="true">
+          <section className="flex flex-col justify-between gap-5 rounded-2xl border border-line bg-surface p-6 shadow-sm sm:flex-row sm:items-start">
+            <div className="flex items-start gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-900 text-lg font-bold text-white" aria-hidden="true">
                 {project.name.slice(0, 1).toUpperCase()}
               </span>
               <div>
-                <p className="eyebrow">Projet</p>
-                <h1>{project.name}</h1>
-                <p>{project.description || "Aucune description"}</p>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Projet</p>
+                <h1 className="mt-2 font-display text-3xl font-semibold text-ink">{project.name}</h1>
+                <p className="mt-2 text-sm text-muted">{project.description || "Aucune description"}</p>
               </div>
             </div>
-            <div className="detail-actions">
-              <button className="button button-secondary" type="button" onClick={() => setIsEditing(true)}>
+            <div className="flex flex-wrap gap-2">
+              <button className="rounded-lg border border-line bg-panel px-3 py-2 text-sm font-semibold text-brand-900" type="button" onClick={() => setIsEditing(true)}>
                 Modifier
               </button>
-              <button className="button button-danger" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>
+              <button className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-danger disabled:opacity-50" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>
                 Supprimer
               </button>
             </div>
           </section>
 
-          <section className="detail-facts" aria-label="Résumé du projet">
-            <div>
+          <section className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-5" aria-label="Résumé du projet">
+            <div className="bg-surface p-4">
               <span>Début</span>
               <strong>{formatDate(project.startDate)}</strong>
             </div>
-            <div>
+            <div className="bg-surface p-4">
               <span>Fin</span>
               <strong>{formatDate(project.endDate)}</strong>
             </div>
-            <div>
+            <div className="bg-surface p-4">
               <span>Phases</span>
               <strong>{project.phases.length}</strong>
             </div>
-            <div>
+            <div className="bg-surface p-4">
               <span>Validées</span>
               <strong>{validatedPhases}</strong>
             </div>
-            <div>
+            <div className="bg-surface p-4">
               <span>Blocages</span>
               <strong>{blockers}</strong>
             </div>
           </section>
 
           {nextPhase && (
-            <section className="project-next-action" aria-label="Prochaine action">
+            <section className="flex flex-col justify-between gap-5 rounded-xl border border-amber-200 bg-[#fff8ec] p-5 sm:flex-row sm:items-center" aria-label="Prochaine action">
               <div>
-                <p className="eyebrow">Prochaine action</p>
-                <h2>{nextPhase.name}</h2>
-                <p>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-warning">Prochaine action</p>
+                <h2 className="mt-1 font-display text-xl font-semibold text-ink">{nextPhase.name}</h2>
+                <p className="mt-2 max-w-xl text-sm leading-6 text-muted">
                   {nextPhase.status === "LOCKED" || nextPhase.status === "REOPENED"
                     ? "Cette phase demande une action corrective avant de reprendre le cours du projet."
                     : "La phase suivante est le point d’attention principal pour ce projet."}
                 </p>
               </div>
-              <div className="project-next-action-meta">
+              <div className="text-sm text-muted">
                 <span>{String(nextPhase.order).padStart(2, "0")} · {nextPhase.status}</span>
                 <strong>{formatDate(nextPhase.deadline)}</strong>
               </div>
-              <Link className="button button-primary" href={`/phases/${nextPhase.id}`}>
+              <Link className="rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white" href={`/phases/${nextPhase.id}`}>
                 Ouvrir la phase
               </Link>
             </section>
@@ -170,13 +170,13 @@ export default function ProjectDetailPage() {
 
           <ProjectTimelineView projectId={project.id} />
 
-          <section className="content-section">
-            <div className="section-heading">
+          <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6">
+            <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <p className="eyebrow">Séquence de travail</p>
-                <h2>Phases du projet</h2>
+                <p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Séquence de travail</p>
+                <h2 className="mt-1 font-display text-xl font-semibold text-ink">Phases du projet</h2>
               </div>
-              <button className="button button-primary" type="button" onClick={() => setIsAddingPhase((current) => !current)}>
+              <button className="rounded-lg bg-brand-900 px-3 py-2 text-sm font-semibold text-white" type="button" onClick={() => setIsAddingPhase((current) => !current)}>
                 <span aria-hidden="true">+</span> Nouvelle phase
               </button>
             </div>
@@ -198,20 +198,20 @@ export default function ProjectDetailPage() {
                 </span>
                 <h3>Aucune phase</h3>
                 <p>Ajoutez la première phase pour donner une séquence à ce projet.</p>
-                <button className="button button-secondary" type="button" onClick={() => setIsAddingPhase(true)}>
+                <button className="rounded-lg border border-line bg-panel px-3 py-2 text-sm font-semibold text-brand-900" type="button" onClick={() => setIsAddingPhase(true)}>
                   Créer une phase
                 </button>
               </div>
             ) : (
-              <div className="phase-list">
+              <div className="divide-y divide-line">
                 {project.phases.map((phase) => (
-                  <Link className="phase-row" href={`/phases/${phase.id}`} key={phase.id}>
-                    <span className="phase-order">{String(phase.order).padStart(2, "0")}</span>
-                    <div className="phase-main">
-                      <h3>{phase.name}</h3>
-                      <p>{phase.description || "Aucune description"}</p>
+                  <Link className="flex items-center gap-4 py-4 first:pt-0 last:pb-0" href={`/phases/${phase.id}`} key={phase.id}>
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-panel text-xs font-bold text-brand-900">{String(phase.order).padStart(2, "0")}</span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-ink">{phase.name}</h3>
+                      <p className="mt-1 text-xs text-muted">{phase.description || "Aucune description"}</p>
                     </div>
-                    <div className="phase-meta">
+                    <div className="flex shrink-0 items-center gap-3 text-xs text-muted">
                       <StatusBadge status={phase.status} />
                       <span>{formatDate(phase.deadline)}</span>
                       <span className="row-arrow" aria-hidden="true">

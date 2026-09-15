@@ -24,5 +24,5 @@ export function ResponseField({ question, response, isSubmitting, onSave, onDele
     return <input value={value} onChange={(event) => setValue(event.target.value)} />;
   }
 
-  return <form className="response-field" onSubmit={submit}><label>{control()}</label><div className="response-actions"><button className="button button-secondary" type="submit" disabled={isSubmitting}>{isSubmitting ? "..." : response ? "Mettre à jour" : "Enregistrer"}</button>{response && <button className="button button-quiet" type="button" onClick={() => void onDelete()}>Effacer</button>}</div>{error && <small className="form-error">{error}</small>}</form>;
+  return <form className="space-y-3" onSubmit={submit}><label className="block">{control()}</label><div className="flex flex-wrap items-center gap-3"><button className="rounded-lg bg-brand-900 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50" type="submit" disabled={isSubmitting}>{isSubmitting ? "..." : response ? "Mettre à jour" : "Enregistrer"}</button>{response && <button className="px-2 py-2 text-xs font-semibold text-muted hover:text-ink" type="button" onClick={() => void onDelete()}>Effacer</button>}</div>{error && <small className="text-xs text-danger">{error}</small>}</form>;
 }

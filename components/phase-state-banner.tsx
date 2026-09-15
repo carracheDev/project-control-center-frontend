@@ -7,16 +7,16 @@ export function PhaseStateBanner({ phase, workflow, readiness, gating }: { phase
     : readiness && !readiness.ready ? { tone: "blocked", title: "Phase bloquée", detail: readiness.blockers[0]?.message || "Des éléments doivent encore être complétés." }
     : { tone: "neutral", title: "Phase en préparation", detail: "Consultez le résumé et les éléments de la phase." };
 
-  const toneClass = state.tone === "success" ? "success" : state.tone === "blocked" ? "danger" : "neutral";
+  const toneClass = state.tone === "success" ? "border-green-200 bg-green-50 text-success" : state.tone === "blocked" ? "border-red-200 bg-red-50 text-danger" : "border-line bg-panel text-muted";
 
   return (
-    <section className={`phase-state-banner ${toneClass}`} aria-live="polite">
+    <section className={`flex items-center justify-between gap-4 rounded-xl border p-5 ${toneClass}`} aria-live="polite">
       <div>
-        <p className="eyebrow">État de la phase</p>
-        <h2>{state.title}</h2>
-        <p>{state.detail}</p>
+        <p className="text-[10px] font-extrabold uppercase tracking-[.14em] opacity-75">État de la phase</p>
+        <h2 className="mt-1 text-lg font-bold text-ink">{state.title}</h2>
+        <p className="mt-1 text-sm">{state.detail}</p>
       </div>
-      <span className="phase-state-icon" aria-hidden="true">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/70 text-lg font-bold" aria-hidden="true">
         {state.tone === "success" ? "✓" : state.tone === "blocked" ? "!" : "·"}
       </span>
     </section>

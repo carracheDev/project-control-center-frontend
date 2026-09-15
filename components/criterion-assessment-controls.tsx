@@ -50,10 +50,10 @@ export function CriterionAssessmentControls({ criterion, evidence, onChanged }: 
   return <div className="criterion-assessment">
     <div className="criterion-assessment-heading"><span>Évaluation</span><strong className={`assessment-state assessment-${status.toLowerCase()}`}>{status}</strong></div>
     <div className="assessment-actions">
-      <button className="button button-quiet" type="button" disabled={isSaving} onClick={() => void save("SATISFIED")}>Satisfied</button>
-      <button className="button button-quiet" type="button" disabled={isSaving} onClick={() => void save("NOT_SATISFIED")}>Not satisfied</button>
-      <button className="button button-quiet" type="button" disabled={isSaving} onClick={() => void save("PENDING")}>Pending</button>
-      {criterion.assessment && <button className="button button-quiet" type="button" disabled={isSaving} onClick={() => void reset()}>Réinitialiser</button>}
+      <button className="rounded-md border border-line px-2 py-1 text-xs font-semibold text-muted hover:border-brand-900 hover:text-brand-900 disabled:opacity-50" type="button" disabled={isSaving} onClick={() => void save("SATISFIED")}>Satisfied</button>
+      <button className="rounded-md border border-line px-2 py-1 text-xs font-semibold text-muted hover:border-brand-900 hover:text-brand-900 disabled:opacity-50" type="button" disabled={isSaving} onClick={() => void save("NOT_SATISFIED")}>Not satisfied</button>
+      <button className="rounded-md border border-line px-2 py-1 text-xs font-semibold text-muted hover:border-brand-900 hover:text-brand-900 disabled:opacity-50" type="button" disabled={isSaving} onClick={() => void save("PENDING")}>Pending</button>
+      {criterion.assessment && <button className="px-2 py-1 text-xs font-semibold text-muted hover:text-ink disabled:opacity-50" type="button" disabled={isSaving} onClick={() => void reset()}>Réinitialiser</button>}
     </div>
     <div className="assessment-fields">
       <input aria-label={`Note pour ${criterion.name}`} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Note optionnelle" />

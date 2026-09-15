@@ -22,19 +22,19 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <main className="page-shell dashboard-page">
-      <section className="page-heading dashboard-header">
+    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <p className="eyebrow">Pilotage multi-projets</p>
-          <h1>Bonjour</h1>
-          <p className="page-lede">Voici l’état actuel de vos projets, phases et prochaines actions à traiter.</p>
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-amber-700">Pilotage multi-projets</p>
+          <h1 className="font-display text-4xl font-bold tracking-tight text-slate-950">Vue d&apos;ensemble</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">Voici l’état actuel de vos projets, phases et prochaines actions à traiter.</p>
         </div>
-        <Link className="button button-primary" href="/projects/new">
+        <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-950 px-4 text-sm font-semibold text-white transition hover:bg-brand-900" href="/projects/new">
           <span aria-hidden="true">+</span> Nouveau projet
         </Link>
       </section>
 
-      {error && <div className="alert alert-error">Impossible de charger le dashboard : {error}</div>}
+      {error && <div className="mb-5 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">Impossible de charger le dashboard : {error}</div>}
 
       {isLoading ? (
         <LoadingState label="Chargement du dashboard..." />
@@ -51,9 +51,9 @@ export function DashboardPage() {
                 actionHref="/projects/new"
               />
             ) : (
-              <div className="dashboard-content">
+              <div className="grid gap-9">
                 <DashboardAttention items={dashboard.attentionItems} />
-                <div className="dashboard-lower-grid">
+                <div className="grid gap-9 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,.75fr)]">
                   <DashboardProgression projects={dashboard.projects} />
                   <RecentValidations validations={dashboard.recentValidations} />
                 </div>
@@ -75,12 +75,12 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
   ];
 
   return (
-    <section className="dashboard-summary" aria-label="Résumé global">
+    <section className="grid overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,.05)] sm:grid-cols-2 lg:grid-cols-4" aria-label="Résumé global">
       {metrics.map(([label, value, note]) => (
-        <div className="dashboard-summary-item" key={label}>
-          <span className="metric-label">{label}</span>
-          <strong>{value}</strong>
-          <span className="metric-note">{note}</span>
+        <div className="grid min-h-24 content-center gap-1 border-b border-slate-200 px-5 py-4 last:border-b-0 sm:[&:nth-child(even)]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0" key={label}>
+          <span className="text-xs font-semibold text-slate-800">{label}</span>
+          <strong className="font-display text-2xl font-bold text-slate-950">{value}</strong>
+          <span className="text-[11px] text-slate-500">{note}</span>
         </div>
       ))}
     </section>
@@ -89,29 +89,29 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
 
 function DashboardAttention({ items }: { items: (DashboardAttentionItem & { projectId: string; projectName: string })[] }) {
   return (
-    <section className="dashboard-section dashboard-attention-section">
-      <div className="section-heading">
+    <section className="rounded-xl border border-slate-200 border-l-4 border-l-accent-400 bg-white px-5 pb-3 pt-5 shadow-[0_8px_24px_rgba(15,23,42,.05)] sm:px-6">
+      <div className="mb-3 flex items-end justify-between gap-5">
         <div>
-          <p className="eyebrow">À traiter</p>
-          <h2>Points d’attention</h2>
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-amber-700">À traiter</p>
+          <h2 className="font-display text-xl font-bold tracking-tight text-slate-950">Points d’attention</h2>
         </div>
-        <span className="panel-pill">{items.length} priorité{items.length > 1 ? "s" : ""}</span>
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{items.length} priorité{items.length > 1 ? "s" : ""}</span>
       </div>
 
       {items.length === 0 ? (
-        <p className="dashboard-empty-line">Aucun élément ne nécessite d’attention.</p>
+        <p className="border-t border-slate-200 py-5 text-sm text-slate-500">Aucun élément ne nécessite d’attention.</p>
       ) : (
-        <div className="dashboard-attention-list">
+        <div className="border-t border-slate-200">
           {items.slice(0, 6).map((item, index) => (
-            <Link className="dashboard-attention-item" href={`/phases/${item.phaseId}`} key={`${item.projectId}-${item.phaseId}-${item.type}-${index}`}>
-              <span className={`attention-marker attention-${item.severity.toLowerCase()}`} aria-hidden="true">
+            <Link className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-slate-200 py-3 transition hover:bg-slate-50" href={`/phases/${item.phaseId}`} key={`${item.projectId}-${item.phaseId}-${item.type}-${index}`}>
+              <span className={`grid h-6 w-6 place-items-center rounded-md text-xs font-bold ${item.severity === "HIGH" ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-700"}`} aria-hidden="true">
                 {item.severity === "HIGH" ? "!" : "·"}
               </span>
-              <span className="dashboard-attention-copy">
-                <small>{item.severity === "HIGH" ? "À corriger" : "À surveiller"} · {item.projectName}</small>
-                <strong>{item.message}</strong>
+              <span className="grid min-w-0 gap-1">
+                <small className="order-first text-[10px] font-bold uppercase tracking-[.06em] text-slate-400">{item.severity === "HIGH" ? "À corriger" : "À surveiller"} · {item.projectName}</small>
+                <strong className="text-[13px] font-semibold leading-5 text-slate-800">{item.message}</strong>
               </span>
-              <span className="row-arrow" aria-hidden="true">
+              <span className="text-lg text-slate-400" aria-hidden="true">
                 →
               </span>
             </Link>
@@ -124,25 +124,25 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
 
 function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }) {
   return (
-    <section className="dashboard-section">
-      <div className="section-heading">
+    <section>
+      <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Portefeuille</p>
-          <h2>Progression</h2>
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-amber-700">Portefeuille</p>
+          <h2 className="font-display text-xl font-bold tracking-tight text-slate-950">Progression des projets</h2>
         </div>
-        <Link className="text-link" href="/projects">Voir les projets <span aria-hidden="true">→</span></Link>
+        <Link className="text-xs font-bold text-blue-600 hover:text-blue-800" href="/projects">Voir les projets <span aria-hidden="true">→</span></Link>
       </div>
-      <div className="dashboard-progression-list">
+      <div className="border-t border-slate-200">
         {projects.map((project) => (
-          <Link className="dashboard-progression-row" href={`/projects/${project.id}`} key={project.id}>
-            <span className="dashboard-progression-name">
-              <strong>{project.name}</strong>
-              <small>{project.phase ? `Phase ${project.phase.order} · ${project.phase.name}` : "Aucune phase active"}</small>
+          <Link className="grid min-h-[72px] grid-cols-[minmax(140px,1fr)_minmax(100px,1.5fr)_42px_auto] items-center gap-4 border-b border-slate-200 px-1 py-3 transition hover:bg-white" href={`/projects/${project.id}`} key={project.id}>
+            <span className="grid min-w-0 gap-1">
+              <strong className="truncate text-[13px] font-semibold text-slate-800">{project.name}</strong>
+              <small className="truncate text-[11px] text-slate-500">{project.phase ? `Phase ${project.phase.order} · ${project.phase.name}` : "Aucune phase active"}</small>
             </span>
-            <span className="dashboard-progression-bar" aria-label={`${project.progress.percentage}% terminé`}>
-              <span style={{ width: `${project.progress.percentage}%` }} />
+            <span className="h-1.5 overflow-hidden rounded-full bg-slate-200" aria-label={`${project.progress.percentage}% terminé`}>
+              <span className="block h-full rounded-full bg-gradient-to-r from-amber-500 to-amber-300" style={{ width: `${project.progress.percentage}%` }} />
             </span>
-            <strong className="dashboard-progression-value">{project.progress.percentage}%</strong>
+            <strong className="text-right text-[13px] font-bold text-slate-700">{project.progress.percentage}%</strong>
             {project.phase && <StatusBadge status={project.phase.status} />}
           </Link>
         ))}
@@ -153,30 +153,30 @@ function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }
 
 function RecentValidations({ validations }: { validations: ProjectDashboardResult["recentValidations"] }) {
   return (
-    <section className="dashboard-section dashboard-validations-section">
-      <div className="section-heading">
+    <section>
+      <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Historique</p>
-          <h2>Validations récentes</h2>
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-amber-700">Historique</p>
+          <h2 className="font-display text-xl font-bold tracking-tight text-slate-950">Dernières validations</h2>
         </div>
-        <span className="panel-pill">{validations.length}</span>
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{validations.length}</span>
       </div>
 
       {validations.length === 0 ? (
-        <p className="dashboard-empty-line">Aucune validation récente.</p>
+        <p className="border-t border-slate-200 py-5 text-sm text-slate-500">Aucune validation récente.</p>
       ) : (
-        <div className="dashboard-validation-list">
+        <div className="border-t border-slate-200">
           {validations.map((validation) => (
-            <Link className="dashboard-validation-item" href={`/phases/${validation.phaseId}`} key={validation.id}>
-              <span className="validation-check" aria-hidden="true">
+            <Link className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-slate-200 py-3 transition hover:bg-white" href={`/phases/${validation.phaseId}`} key={validation.id}>
+              <span className="grid h-6 w-6 place-items-center rounded-md bg-emerald-50 text-xs font-bold text-emerald-700" aria-hidden="true">
                 ✓
               </span>
-              <span className="dashboard-validation-copy">
-                <strong>{validation.phaseName}</strong>
-                <small>
+              <span className="grid min-w-0 gap-1">
+                <strong className="truncate text-[13px] font-semibold text-slate-800">{validation.phaseName}</strong>
+                <small className="text-[11px] text-slate-500">
                   {validation.projectName} · {formatDate(validation.validatedAt)}
                 </small>
-                {validation.validatedBy && <small>par {validation.validatedBy}</small>}
+                {validation.validatedBy && <small className="text-[11px] text-slate-400">par {validation.validatedBy}</small>}
               </span>
             </Link>
           ))}

@@ -53,26 +53,26 @@ function ProjectsContent() {
   }
 
   return (
-    <main className="page-shell">
-      <section className="page-heading">
+    <main className="space-y-7">
+      <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <p className="eyebrow">Espace de travail</p>
-          <h1>Projets</h1>
-          <p className="page-lede">Pilotez vos projets et gardez une lecture nette des phases, états et prochaines actions.</p>
+          <p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Espace de travail</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-ink">Projets</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Pilotez vos projets et gardez une lecture nette des phases, états et prochaines actions.</p>
         </div>
-        <Link className="button button-primary" href="/projects/new">
+        <Link className="inline-flex items-center rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-950" href="/projects/new">
           <span aria-hidden="true">+</span> Nouveau projet
         </Link>
       </section>
 
-      {success && <div className="alert alert-success" role="status">{success}</div>}
-      {error && <div className="alert alert-error" role="alert">{error}</div>}
+      {success && <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-success" role="status">{success}</div>}
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-danger" role="alert">{error}</div>}
 
-      <section className="content-section">
-        <div className="section-heading">
+      <section className="rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6">
+        <div className="mb-5">
           <div>
-            <p className="eyebrow">Tous les projets</p>
-            <h2>{isLoading ? "Chargement" : `${projects.length} projet${projects.length === 1 ? "" : "s"}`}</h2>
+            <p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Tous les projets</p>
+            <h2 className="mt-1 font-display text-xl font-semibold text-ink">{isLoading ? "Chargement" : `${projects.length} projet${projects.length === 1 ? "" : "s"}`}</h2>
           </div>
         </div>
 
@@ -86,7 +86,7 @@ function ProjectsContent() {
             actionHref="/projects/new"
           />
         ) : (
-          <div className="project-list" aria-label="Liste des projets">
+          <div className="divide-y divide-line" aria-label="Liste des projets">
             {projects.map((project) => {
               const validatedCount = project.phases.filter((phase) => phase.status === "VALIDATED").length;
               const progress = project.phases.length ? Math.round((validatedCount / project.phases.length) * 100) : 0;
@@ -94,26 +94,26 @@ function ProjectsContent() {
               const blocked = currentPhase?.status === "LOCKED" || currentPhase?.status === "REOPENED";
 
               return (
-                <article className="project-list-row" key={project.id}>
-                  <div className="project-list-identity">
-                    <span className="project-mark" aria-hidden="true">{project.name.slice(0, 1).toUpperCase()}</span>
-                    <div><h3>{project.name}</h3><p>{project.description || "Aucune description"}</p></div>
+                <article className="grid gap-5 py-5 first:pt-0 last:pb-0 lg:grid-cols-[1.5fr_1fr_1.2fr_auto] lg:items-center" key={project.id}>
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-900 text-sm font-bold text-white" aria-hidden="true">{project.name.slice(0, 1).toUpperCase()}</span>
+                    <div><h3 className="font-semibold text-ink">{project.name}</h3><p className="mt-1 text-xs text-muted">{project.description || "Aucune description"}</p></div>
                   </div>
-                  <div className="project-list-progress">
-                    <span>Progression <strong>{progress}%</strong></span>
-                    <div className="dashboard-progress-track"><span style={{ width: `${progress}%` }} /></div>
-                    <small>{validatedCount}/{project.phases.length} phases validées</small>
+                  <div>
+                    <span className="flex justify-between text-xs text-muted">Progression <strong className="text-ink">{progress}%</strong></span>
+                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-panel"><span className="block h-full rounded-full bg-brand-900" style={{ width: `${progress}%` }} /></div>
+                    <small className="mt-1 block text-[11px] text-muted">{validatedCount}/{project.phases.length} phases validées</small>
                   </div>
-                  <div className="project-list-context">
-                    <span className={blocked ? "context-label context-blocked" : "context-label"}>{blocked ? "Blocage" : "Prochaine action"}</span>
-                    <strong>{currentPhase ? `Phase ${currentPhase.order} · ${currentPhase.name}` : "Créer une première phase"}</strong>
-                    <small>{currentPhase ? formatDate(currentPhase.deadline) : formatDate(project.startDate)}</small>
+                  <div>
+                    <span className={blocked ? "text-xs font-semibold text-danger" : "text-xs font-semibold text-muted"}>{blocked ? "Blocage" : "Prochaine action"}</span>
+                    <strong className="mt-1 block text-sm text-ink">{currentPhase ? `Phase ${currentPhase.order} · ${currentPhase.name}` : "Créer une première phase"}</strong>
+                    <small className="mt-1 block text-xs text-muted">{currentPhase ? formatDate(currentPhase.deadline) : formatDate(project.startDate)}</small>
                   </div>
-                  <div className="project-list-actions">
+                  <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                     {currentPhase && <StatusBadge status={currentPhase.status} />}
-                    <Link className="button button-primary" href={`/projects/${project.id}`}>Ouvrir</Link>
+                    <Link className="rounded-lg bg-brand-900 px-3 py-2 text-xs font-semibold text-white hover:bg-brand-950" href={`/projects/${project.id}`}>Ouvrir</Link>
                     <button
-                      className="row-delete"
+                      className="px-2 py-2 text-xs font-semibold text-muted hover:text-danger"
                       type="button"
                       onClick={() => void handleDelete(project)}
                       disabled={deletingId === project.id}
