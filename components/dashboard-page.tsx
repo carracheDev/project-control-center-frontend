@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, Plus } from "lucide-react";
+import { Activity, AlertCircle, ArrowRight, CheckCircle2, CircleCheck, Clock3, FolderKanban, Plus, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { LoadingState } from "@/components/loading-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -68,20 +68,23 @@ export function DashboardPage() {
 }
 
 function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summary"] }) {
-  const metrics = [
-    ["Projets", summary.totalProjects, "dans votre portefeuille"],
-    ["En cours", summary.activeProjects, "à suivre maintenant"],
-    ["À traiter", summary.projectsNeedingAttention, "demandent une décision"],
-    ["Terminés", summary.completedProjects, "validation complète"],
+  const metrics: [string, number, string, LucideIcon, string][] = [
+    ["Projets", summary.totalProjects, "dans votre portefeuille", FolderKanban, "text-brand-900"],
+    ["En cours", summary.activeProjects, "à suivre maintenant", Activity, "text-blue-600"],
+    ["À traiter", summary.projectsNeedingAttention, "demandent une décision", AlertCircle, "text-warning"],
+    ["Terminés", summary.completedProjects, "validation complète", CheckCircle2, "text-success"],
   ];
 
   return (
     <section className="grid overflow-hidden rounded-xl border border-line bg-surface shadow-[0_8px_24px_rgba(15,23,42,.05)] sm:grid-cols-2 lg:grid-cols-4" aria-label="Résumé global">
-      {metrics.map(([label, value, note]) => (
-        <div className="grid min-h-24 content-center gap-1 border-b border-line px-5 py-4 last:border-b-0 sm:[&:nth-child(even)]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0" key={label}>
-          <span className="text-xs font-semibold text-ink">{label}</span>
-          <strong className="font-display text-2xl font-bold text-ink">{value}</strong>
-          <span className="text-[11px] text-muted">{note}</span>
+      {metrics.map(([label, value, note, Icon, iconColor]) => (
+        <div className="flex min-h-28 items-center gap-3 border-b border-line px-5 py-4 last:border-b-0 sm:[&:nth-child(even)]:border-l lg:border-b-0 lg:border-l lg:first:border-l-0" key={label}>
+          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-panel ${iconColor}`} aria-hidden="true"><Icon size={17} strokeWidth={2} /></span>
+          <span className="grid gap-1">
+            <span className="text-xs font-semibold text-ink">{label}</span>
+            <strong className="font-display text-2xl font-bold leading-none text-ink">{value}</strong>
+            <span className="text-[11px] text-muted">{note}</span>
+          </span>
         </div>
       ))}
     </section>
@@ -104,15 +107,15 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
       ) : (
         <div className="border-t border-line">
           {items.slice(0, 6).map((item, index) => (
-            <Link className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line py-3 transition hover:bg-panel" href={`/phases/${item.phaseId}`} key={`${item.projectId}-${item.phaseId}-${item.type}-${index}`}>
-              <span className={`grid h-6 w-6 place-items-center rounded-md text-xs font-bold ${item.severity === "HIGH" ? "bg-red-50 text-danger" : "bg-amber-50 text-warning"}`} aria-hidden="true">
-                {item.severity === "HIGH" ? "!" : "·"}
+            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-2 py-3 transition hover:border-accent-400 hover:bg-panel" href={`/phases/${item.phaseId}`} key={`${item.projectId}-${item.phaseId}-${item.type}-${index}`}>
+              <span className={`grid h-8 w-8 place-items-center rounded-lg ${item.severity === "HIGH" ? "bg-red-50 text-danger" : "bg-amber-50 text-warning"}`} aria-hidden="true">
+                {item.severity === "HIGH" ? <AlertCircle size={16} /> : <Clock3 size={16} />}
               </span>
               <span className="grid min-w-0 gap-1">
                 <small className="order-first text-[10px] font-bold uppercase tracking-[.06em] text-muted">{item.severity === "HIGH" ? "À corriger" : "À surveiller"} · {item.projectName}</small>
                 <strong className="text-[13px] font-semibold leading-5 text-ink">{item.message}</strong>
               </span>
-              <ArrowRight className="text-muted" aria-hidden="true" size={17} />
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted transition group-hover:text-brand-900">Ouvrir <ArrowRight aria-hidden="true" size={15} /></span>
             </Link>
           ))}
         </div>
@@ -133,7 +136,7 @@ function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }
       </div>
       <div className="border-t border-line">
         {projects.map((project) => (
-          <Link className="grid min-h-[72px] grid-cols-[minmax(140px,1fr)_minmax(100px,1.5fr)_42px_auto] items-center gap-4 border-b border-line px-1 py-3 transition hover:bg-surface" href={`/projects/${project.id}`} key={project.id}>
+          <Link className="group grid min-h-[72px] grid-cols-[minmax(140px,1fr)_minmax(100px,1.5fr)_42px_auto] items-center gap-4 rounded-lg border border-transparent border-b-line px-2 py-3 transition hover:border-accent-400 hover:bg-surface hover:shadow-[0_6px_16px_rgba(15,23,42,.05)]" href={`/projects/${project.id}`} key={project.id}>
             <span className="grid min-w-0 gap-1">
               <strong className="truncate text-[13px] font-semibold text-ink">{project.name}</strong>
               <small className="truncate text-[11px] text-muted">{project.phase ? `Phase ${project.phase.order} · ${project.phase.name}` : "Aucune phase active"}</small>
@@ -155,28 +158,27 @@ function RecentValidations({ validations }: { validations: ProjectDashboardResul
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-amber-700">Historique</p>
-          <h2 className="font-display text-xl font-bold tracking-tight text-slate-950">Dernières validations</h2>
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">Historique</p>
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink">Dernières validations</h2>
         </div>
-        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">{validations.length}</span>
+        <span className="rounded-full bg-panel px-2.5 py-1 text-[10px] font-bold text-muted">{validations.length}</span>
       </div>
 
       {validations.length === 0 ? (
-        <p className="border-t border-slate-200 py-5 text-sm text-slate-500">Aucune validation récente.</p>
+        <p className="border-t border-line py-5 text-sm text-muted">Aucune validation récente.</p>
       ) : (
-        <div className="border-t border-slate-200">
+        <div className="border-t border-line">
           {validations.map((validation) => (
-            <Link className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-b border-slate-200 py-3 transition hover:bg-white" href={`/phases/${validation.phaseId}`} key={validation.id}>
-              <span className="grid h-6 w-6 place-items-center rounded-md bg-emerald-50 text-xs font-bold text-emerald-700" aria-hidden="true">
-                ✓
-              </span>
+            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line rounded-lg px-2 py-3 transition hover:border-accent-400 hover:bg-surface" href={`/phases/${validation.phaseId}`} key={validation.id}>
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success" aria-hidden="true"><CircleCheck size={16} /></span>
               <span className="grid min-w-0 gap-1">
-                <strong className="truncate text-[13px] font-semibold text-slate-800">{validation.phaseName}</strong>
-                <small className="text-[11px] text-slate-500">
+                <strong className="truncate text-[13px] font-semibold text-ink">{validation.phaseName}</strong>
+                <small className="text-[11px] text-muted">
                   {validation.projectName} · {formatDate(validation.validatedAt)}
                 </small>
-                {validation.validatedBy && <small className="text-[11px] text-slate-400">par {validation.validatedBy}</small>}
+                {validation.validatedBy && <small className="text-[11px] text-muted">par {validation.validatedBy}</small>}
               </span>
+              <ArrowRight className="text-muted transition group-hover:text-brand-900" aria-hidden="true" size={15} />
             </Link>
           ))}
         </div>
