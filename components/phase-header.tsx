@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { formatDate } from "@/lib/format";
 import type { Phase, Project } from "@/types/domain";
@@ -26,10 +27,10 @@ export function PhaseHeader({ phase, project }: { phase: Phase; project: Project
       <div className="flex shrink-0 flex-col items-start gap-4 sm:items-end">
         <StatusBadge status={phase.status} />
         <div className="text-left sm:text-right">
-          <span className="block text-xs text-muted">Deadline</span>
+          <span className="flex items-center justify-start gap-1 text-xs text-muted sm:justify-end"><CalendarDays size={13} /> Deadline</span>
           <strong className="text-sm font-semibold text-ink">{formatDate(phase.deadline)}</strong>
         </div>
-        <Link className="inline-flex items-center rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-brand-900 transition-colors hover:border-brand-900" href={`/projects/${phase.projectId}`}>← Retour au projet</Link>
+        <Link className="inline-flex items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-brand-900 transition-colors hover:border-brand-900" href={`/projects/${phase.projectId}`}><ArrowLeft size={14} /> Retour au projet</Link>
       </div>
     </section>
   </>;

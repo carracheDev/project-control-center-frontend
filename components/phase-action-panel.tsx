@@ -1,4 +1,5 @@
 import type { GatingResult, Phase, PhaseWorkflowState } from "@/types/domain";
+import { AlertTriangle, CheckCircle2, LockKeyhole, ShieldCheck } from "lucide-react";
 
 export function PhaseActionPanel({ phase, workflow, gating, isSubmitting, onValidate, onShowBlockers }: { phase: Phase; workflow: PhaseWorkflowState | null; gating: GatingResult | null; isSubmitting: boolean; onValidate: () => void; onShowBlockers: () => void }) {
   const locked = workflow?.locked === true;
@@ -22,15 +23,17 @@ export function PhaseActionPanel({ phase, workflow, gating, isSubmitting, onVali
       </div>
 
       {validated ? (
-        <span className="inline-flex w-fit items-center rounded-full bg-green-100 px-3 py-2 text-xs font-bold text-success">✓ Validée</span>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-green-100 px-3 py-2 text-xs font-bold text-success"><CheckCircle2 size={14} /> Validée</span>
       ) : locked ? (
-        <span className="inline-flex w-fit items-center rounded-full bg-red-100 px-3 py-2 text-xs font-bold text-danger">Verrouillée</span>
+        <span className="inline-flex w-fit items-center gap-2 rounded-full bg-red-100 px-3 py-2 text-xs font-bold text-danger"><LockKeyhole size={14} /> Verrouillée</span>
       ) : canValidate ? (
-        <button className="inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-900 px-4 text-sm font-semibold text-white transition hover:bg-brand-950 disabled:cursor-wait disabled:opacity-60" type="button" disabled={isSubmitting} onClick={onValidate}>
+        <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-brand-900 px-4 text-sm font-semibold text-white transition hover:bg-brand-950 disabled:cursor-wait disabled:opacity-60" type="button" disabled={isSubmitting} onClick={onValidate}>
+          <ShieldCheck size={16} />
           {isSubmitting ? "Validation..." : "Valider la phase"}
         </button>
       ) : (
-        <button className="inline-flex min-h-10 items-center justify-center rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-brand-900 transition hover:border-brand-900" type="button" onClick={onShowBlockers}>
+        <button className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-brand-900 transition hover:border-brand-900" type="button" onClick={onShowBlockers}>
+          <AlertTriangle size={16} />
           Voir les blocages
         </button>
       )}

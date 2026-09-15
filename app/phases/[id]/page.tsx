@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { ClipboardList, FileCheck, History, LayoutDashboard, ListChecks, ListTodo, MessagesSquare, Plus, Target, type LucideIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
@@ -252,8 +252,8 @@ export default function PhaseDetailPage() {
 
   const readinessBlockers = readiness?.blockers.length ?? 0;
   const gatingBlockers = gating?.blockers.length ?? 0;
-  const tabs: { id: PhaseTab; label: string }[] = [
-    { id: "overview", label: "Vue d'ensemble" }, { id: "objectives", label: "Objectifs" }, { id: "criteria", label: "Critères" }, { id: "tasks", label: "Tâches" }, { id: "questionnaires", label: "Questionnaires" }, { id: "interviews", label: "Interviews" }, { id: "evidence", label: "Preuves" }, { id: "history", label: "Historique" },
+  const tabs: { id: PhaseTab; label: string; icon: LucideIcon }[] = [
+    { id: "overview", label: "Vue d'ensemble", icon: LayoutDashboard }, { id: "objectives", label: "Objectifs", icon: Target }, { id: "criteria", label: "Critères", icon: ListChecks }, { id: "tasks", label: "Tâches", icon: ListTodo }, { id: "questionnaires", label: "Questionnaires", icon: ClipboardList }, { id: "interviews", label: "Interviews", icon: MessagesSquare }, { id: "evidence", label: "Preuves", icon: FileCheck }, { id: "history", label: "Historique", icon: History },
   ];
 
   return <main className="space-y-6">
@@ -268,7 +268,7 @@ export default function PhaseDetailPage() {
           className={`shrink-0 border-b-2 px-3 py-3 text-xs font-semibold ${activeTab === tab.id ? "border-accent-400 text-brand-900" : "border-transparent text-muted"}`}
           onClick={() => setActiveTab(tab.id)}
         >
-          {tab.label}
+          <tab.icon size={14} /> {tab.label}
         </button>
       ))}
     </nav>
@@ -327,12 +327,14 @@ export default function PhaseDetailPage() {
 
 function EntitySection({ title, count, action, children }: { title: string; count: number; action: () => void; children: ReactNode }) {
   const tab = title === "Evidences" ? "evidence" : title.toLowerCase();
+  const SectionIcon = title === "Objectifs" ? Target : title === "Critères" ? ListChecks : title === "Tâches" ? ListTodo : title === "Questionnaires" ? ClipboardList : title === "Interviews" ? MessagesSquare : FileCheck;
   return (
     <section className={`rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6 tab-${tab}`}>
       <div className="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="text-xs font-bold uppercase tracking-[.14em] text-muted">Phase scope</p>
-          <h2 className="mt-1 font-display text-xl font-semibold text-ink">
+          <h2 className="mt-1 flex items-center gap-2 font-display text-xl font-semibold text-ink">
+            <SectionIcon className="text-muted" size={17} />
             {title}
             <span className="ml-2 text-muted">{count}</span>
           </h2>
@@ -351,9 +353,9 @@ function EmptyInline({ label }: { label: string }) {
 }
 
 function ReadinessList({ title, items, emptyLabel }: { title: string; items: { type: string; message: string; relatedEntityId: string | null }[]; emptyLabel: string }) {
-  return <div className="rounded-xl border border-line bg-panel p-4"><h3 className="font-semibold text-ink">{title}</h3>{items.length === 0 ? <p className="mt-2 text-sm text-muted">{emptyLabel}</p> : <ul className="mt-3 space-y-2 text-sm text-muted">{items.map((item, index) => <li className="border-l-2 border-accent-400 pl-3" key={`${item.relatedEntityId ?? item.type}-${index}`}>{item.message}</li>)}</ul>}</div>;
+  return <div className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent-400"><h3 className="font-semibold text-ink">{title}</h3>{items.length === 0 ? <p className="mt-2 text-sm text-muted">{emptyLabel}</p> : <ul className="mt-3 space-y-2 text-sm text-muted">{items.map((item, index) => <li className="border-l-2 border-accent-400 pl-3" key={`${item.relatedEntityId ?? item.type}-${index}`}>{item.message}</li>)}</ul>}</div>;
 }
 
 function GatingList({ title, items, emptyLabel }: { title: string; items: string[]; emptyLabel: string }) {
-  return <div className="rounded-xl border border-line bg-panel p-4"><h3 className="font-semibold text-ink">{title}</h3>{items.length === 0 ? <p className="mt-2 text-sm text-muted">{emptyLabel}</p> : <ul className="mt-3 space-y-2 text-sm text-muted">{items.map((item) => <li className="border-l-2 border-accent-400 pl-3" key={item}>{item}</li>)}</ul>}</div>;
+  return <div className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent-400"><h3 className="font-semibold text-ink">{title}</h3>{items.length === 0 ? <p className="mt-2 text-sm text-muted">{emptyLabel}</p> : <ul className="mt-3 space-y-2 text-sm text-muted">{items.map((item) => <li className="border-l-2 border-accent-400 pl-3" key={item}>{item}</li>)}</ul>}</div>;
 }
