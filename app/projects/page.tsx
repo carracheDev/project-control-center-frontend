@@ -86,63 +86,34 @@ function ProjectsContent() {
             actionHref="/projects/new"
           />
         ) : (
-          <div className="project-card-grid" aria-label="Liste des projets">
+          <div className="project-list" aria-label="Liste des projets">
             {projects.map((project) => {
               const validatedCount = project.phases.filter((phase) => phase.status === "VALIDATED").length;
               const progress = project.phases.length ? Math.round((validatedCount / project.phases.length) * 100) : 0;
-              const currentPhase = project.phases[0] ?? null;
+              const currentPhase = project.phases.find((phase) => phase.status !== "VALIDATED") ?? project.phases.at(-1) ?? null;
+              const blocked = currentPhase?.status === "LOCKED" || currentPhase?.status === "REOPENED";
 
               return (
-                <div className="project-overview-card" key={project.id}>
-                  <div className="project-overview-top">
-                    <div className="project-overview-title">
-                      <span className="project-mark" aria-hidden="true">
-                        {project.name.slice(0, 1).toUpperCase()}
-                      </span>
-                      <div>
-                        <p className="mini-label">Projet</p>
-                        <h3>{project.name}</h3>
-                      </div>
-                    </div>
+                <article className="project-list-row" key={project.id}>
+                  <div className="project-list-identity">
+                    <span className="project-mark" aria-hidden="true">{project.name.slice(0, 1).toUpperCase()}</span>
+                    <div><h3>{project.name}</h3><p>{project.description || "Aucune description"}</p></div>
+                  </div>
+                  <div className="project-list-progress">
+                    <span>Progression <strong>{progress}%</strong></span>
+                    <div className="dashboard-progress-track"><span style={{ width: `${progress}%` }} /></div>
+                    <small>{validatedCount}/{project.phases.length} phases validées</small>
+                  </div>
+                  <div className="project-list-context">
+                    <span className={blocked ? "context-label context-blocked" : "context-label"}>{blocked ? "Blocage" : "Prochaine action"}</span>
+                    <strong>{currentPhase ? `Phase ${currentPhase.order} · ${currentPhase.name}` : "Créer une première phase"}</strong>
+                    <small>{currentPhase ? formatDate(currentPhase.deadline) : formatDate(project.startDate)}</small>
+                  </div>
+                  <div className="project-list-actions">
                     {currentPhase && <StatusBadge status={currentPhase.status} />}
-                  </div>
-
-                  <p className="project-card-description">{project.description || "Aucune description"}</p>
-
-                  <div className="project-overview-meta">
-                    <div>
-                      <span>Phases</span>
-                      <strong>{project.phases.length}</strong>
-                    </div>
-                    <div>
-                      <span>Progression</span>
-                      <strong>{progress}%</strong>
-                    </div>
-                    <div>
-                      <span>Période</span>
-                      <strong>{formatDate(project.startDate)}</strong>
-                    </div>
-                  </div>
-
-                  <div className="dashboard-progress-block">
-                    <div className="dashboard-progress-header">
-                      <span>Phase actuelle</span>
-                      <strong>{currentPhase ? `${String(currentPhase.order).padStart(2, "0")} · ${currentPhase.name}` : "Aucune phase"}</strong>
-                    </div>
-                    <div className="dashboard-progress-track">
-                      <span style={{ width: `${progress}%` }} />
-                    </div>
-                    <small>
-                      {validatedCount}/{project.phases.length} phases validées
-                    </small>
-                  </div>
-
-                  <div className="project-overview-actions">
-                    <Link className="button button-secondary" href={`/projects/${project.id}`}>
-                      Ouvrir
-                    </Link>
+                    <Link className="button button-primary" href={`/projects/${project.id}`}>Ouvrir</Link>
                     <button
-                      className="button button-danger"
+                      className="row-delete"
                       type="button"
                       onClick={() => void handleDelete(project)}
                       disabled={deletingId === project.id}
@@ -150,7 +121,7 @@ function ProjectsContent() {
                       {deletingId === project.id ? "Suppression..." : "Supprimer"}
                     </button>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

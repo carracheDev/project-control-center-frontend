@@ -12,14 +12,14 @@ interface PhaseSummaryProps {
   gating: GatingResult | null;
 }
 
-export function PhaseSummary({ phase, blockers, objectives, criteria, tasks }: PhaseSummaryProps) {
+export function PhaseSummary({ phase, blockers, objectives, criteria, tasks, interviews, evidence, readiness, gating }: PhaseSummaryProps) {
   const progress = phase.status === "VALIDATED" ? "Validée" : phase.status === "LOCKED" ? "Verrouillée" : phase.status === "IN_PROGRESS" ? "En cours" : "À préparer";
   const items = [
-    ["Progression", progress],
-    ["Bloqueurs", blockers],
-    ["Objectifs", objectives],
-    ["Critères", criteria],
-    ["Tâches", tasks],
+    ["État", progress],
+    ["Validation", gating?.canValidate ? "Prête" : readiness?.ready ? "À vérifier" : "À compléter"],
+    ["Blocages", blockers],
+    ["Travail", `${tasks} tâches · ${objectives} objectifs`],
+    ["Matière", `${criteria} critères · ${interviews} interviews · ${evidence} preuves`],
   ];
 
   return (

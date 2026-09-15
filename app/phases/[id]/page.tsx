@@ -298,7 +298,7 @@ export default function PhaseDetailPage() {
       {formKind === "evidence" && <EvidenceForm evidence={editingEvidence} criteria={criteria} tasks={tasks} interviews={interviews} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveEvidence} onUpload={uploadEvidenceFile} />}
       {evidence.length === 0 ? <EmptyInline label="Aucune preuve enregistrée." /> : <div className="work-list">{evidence.map((item) => <div className="work-row" key={item.id}><div className="work-main"><h3>{item.title}</h3><p>{item.type} · {item.source} · {item.criterion?.name || "Sans criterion"}</p></div><span className={`task-status evidence-${item.status.toLowerCase()}`}>{item.status}</span><div className="row-controls"><button className="icon-button" type="button" onClick={() => { setEditingId(item.id); setFormKind("evidence"); }} aria-label="Modifier la preuve">✎</button>{item.status === "PENDING" && <><button className="icon-button" type="button" onClick={() => void verifyEvidence(item.id).then((updated) => { setEvidence((items) => items.map((entry) => entry.id === item.id ? updated : entry)); setSuccess("Preuve vérifiée par le backend."); }).catch((requestError: Error) => setError(requestError.message))} aria-label="Vérifier la preuve">✓</button><button className="icon-button icon-button-danger" type="button" onClick={() => void rejectEvidence(item.id).then((updated) => { setEvidence((items) => items.map((entry) => entry.id === item.id ? updated : entry)); setSuccess("Preuve rejetée par le backend."); }).catch((requestError: Error) => setError(requestError.message))} aria-label="Rejeter la preuve">!</button></>}<button className="icon-button icon-button-danger" type="button" onClick={() => void remove("evidence", item.id)} aria-label="Supprimer la preuve">×</button></div></div>)}</div>}
     </EntitySection>
-    <section className="content-section readiness-section" aria-live="polite">
+    <section className="content-section readiness-section tab-panel tab-overview" aria-live="polite">
       <div className="section-heading"><div><p className="eyebrow">Diagnostic calculé à la demande</p><h2>État de préparation</h2></div><span className={`readiness-status readiness-${readiness?.ready ? "ready" : "not-ready"}`}>{readiness?.ready ? "READY" : "NOT READY"}</span></div>
       <div className="readiness-columns">
         <ReadinessList title="Bloqueurs" items={readiness?.blockers ?? []} className="readiness-blockers" emptyLabel="Aucun bloqueur détecté." />
@@ -306,7 +306,7 @@ export default function PhaseDetailPage() {
         <ReadinessList title="Prochaines actions" items={readiness?.nextActions ?? []} className="readiness-actions" emptyLabel="Aucune action suggérée." />
       </div>
     </section>
-    <section className="content-section gating-section" aria-live="polite">
+    <section className="content-section gating-section tab-panel tab-overview" aria-live="polite">
       <div className="section-heading"><div><p className="eyebrow">Conditions de sortie configurées</p><h2>Gating</h2></div><span className={`gating-status gating-${gating?.canValidate ? "can" : "cannot"}`}>{gating?.canValidate ? "CAN VALIDATE" : "CANNOT VALIDATE"}</span></div>
       <p className="gating-explanation">{gating?.canValidate ? "Conditions de validation remplies." : "Conditions de validation non remplies."} Ce diagnostic ne valide pas la phase et ne modifie pas son statut.</p>
       <div className="gating-columns">
@@ -315,7 +315,7 @@ export default function PhaseDetailPage() {
         <div className="gating-conditions"><h3>Conditions</h3>{gating?.conditions.length ? <ul>{gating.conditions.map((condition) => <li key={condition.code}><strong>{condition.label}</strong><span>{condition.required ? "Requise" : "Informative"} · {condition.satisfied ? "Satisfaite" : "Non satisfaite"}</span>{condition.reason && <small>{condition.reason}</small>}</li>)}</ul> : <p>Aucune condition configurée.</p>}</div>
       </div>
     </section>
-    <section className="content-section validation-section" aria-live="polite">
+    <section className="content-section validation-section tab-panel tab-history" aria-live="polite">
       <div className="section-heading"><div><p className="eyebrow">Opération officielle</p><h2>Validation de la phase</h2></div><span className={`validation-status validation-${phase.status.toLowerCase()}`}>{phase.status === "VALIDATED" ? "VALIDÉE" : "NON VALIDÉE"}</span></div>
       {phase.status === "VALIDATED" ? <p className="validation-message validation-message-success">Phase validée. Une validation supplémentaire n’est pas autorisée.</p> : gating?.canValidate ? <p className="validation-message validation-message-success">Conditions de validation remplies.</p> : <div className="validation-blocked"><p className="validation-message">Validation impossible.</p><ul>{(gating?.blockers ?? []).map((blocker) => <li key={blocker}>{blocker}</li>)}</ul></div>}
       <button className="button button-primary" type="button" disabled={!gating?.canValidate || workflow?.locked || phase.status === "VALIDATED" || isSubmitting} onClick={() => void validateCurrentPhase()}>{isSubmitting ? "Validation..." : "Valider la phase"}</button>
@@ -325,8 +325,9 @@ export default function PhaseDetailPage() {
 }
 
 function EntitySection({ title, count, action, children }: { title: string; count: number; action: () => void; children: ReactNode }) {
+  const tab = title === "Evidences" ? "evidence" : title.toLowerCase();
   return (
-    <section className="content-section entity-section">
+    <section className={`content-section entity-section tab-panel tab-${tab}`}>
       <div className="phase-entity-header">
         <div>
           <p className="eyebrow">Phase scope</p>

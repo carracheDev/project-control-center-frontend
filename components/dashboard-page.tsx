@@ -43,10 +43,6 @@ export function DashboardPage() {
           <>
             <DashboardSummary summary={dashboard.summary} />
 
-            {dashboard.projects.length > 0 && (
-              <DashboardFocusProject project={dashboard.projects[0]} />
-            )}
-
             {dashboard.projects.length === 0 ? (
               <EmptyState
                 title="Aucun projet n’est encore enregistré"
@@ -55,29 +51,12 @@ export function DashboardPage() {
                 actionHref="/projects/new"
               />
             ) : (
-              <div className="dashboard-layout">
-                <section className="content-section dashboard-projects-section">
-                  <div className="section-heading">
-                    <div>
-                      <p className="eyebrow">Vue portefeuille</p>
-                      <h2>Projets actifs</h2>
-                    </div>
-                    <Link className="text-link" href="/projects">
-                      Gérer les projets <span aria-hidden="true">→</span>
-                    </Link>
-                  </div>
-
-                  <div className="dashboard-project-grid">
-                    {dashboard.projects.map((project) => (
-                      <ProjectDashboardCardView key={project.id} project={project} />
-                    ))}
-                  </div>
-                </section>
-
-                <aside className="dashboard-side-column">
-                  <DashboardAttention items={dashboard.attentionItems} />
+              <div className="dashboard-content">
+                <DashboardAttention items={dashboard.attentionItems} />
+                <div className="dashboard-lower-grid">
+                  <DashboardProgression projects={dashboard.projects} />
                   <RecentValidations validations={dashboard.recentValidations} />
-                </aside>
+                </div>
               </div>
             )}
           </>
@@ -89,138 +68,34 @@ export function DashboardPage() {
 
 function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summary"] }) {
   const metrics = [
-    ["Projets", summary.totalProjects, "total"],
-    ["Actifs", summary.activeProjects, "phases en cours"],
-    ["Terminés", summary.completedProjects, "toutes phases validées"],
-    ["Bloqués", summary.blockedProjects, "blocage détecté"],
-    ["À surveiller", summary.projectsNeedingAttention, "projets à relancer"],
+    ["Projets", summary.totalProjects, "dans votre portefeuille"],
+    ["En cours", summary.activeProjects, "à suivre maintenant"],
+    ["À traiter", summary.projectsNeedingAttention, "demandent une décision"],
+    ["Terminés", summary.completedProjects, "validation complète"],
   ];
 
   return (
-    <section className="dashboard-summary-grid" aria-label="Résumé global">
+    <section className="dashboard-summary" aria-label="Résumé global">
       {metrics.map(([label, value, note]) => (
-        <article className="metric-card" key={label}>
+        <div className="dashboard-summary-item" key={label}>
           <span className="metric-label">{label}</span>
           <strong>{value}</strong>
           <span className="metric-note">{note}</span>
-        </article>
+        </div>
       ))}
     </section>
   );
 }
 
-function DashboardFocusProject({ project }: { project: ProjectDashboardCard }) {
-  const nextAction = project.attention.items[0]?.message ?? "Aucune attention particulière";
-
-  return (
-    <section className="dashboard-focus-panel" aria-label="Projet actif">
-      <div className="dashboard-focus-header">
-        <div>
-          <p className="eyebrow">Projet actif</p>
-          <h2>{project.name}</h2>
-        </div>
-        {project.phase && <StatusBadge status={project.phase.status} />}
-      </div>
-
-      <p className="project-card-description">{project.description || "Aucune description"}</p>
-
-      <div className="dashboard-focus-meta">
-        <div>
-          <span>Phase actuelle</span>
-          <strong>{project.phase ? `${String(project.phase.order).padStart(2, "0")} · ${project.phase.name}` : "Aucune phase"}</strong>
-        </div>
-        <div>
-          <span>Progression</span>
-          <strong>{project.progress.percentage}%</strong>
-        </div>
-        <div>
-          <span>Prochaine action</span>
-          <strong>{nextAction}</strong>
-        </div>
-      </div>
-
-      <div className="dashboard-progress-block">
-        <div className="dashboard-progress-header">
-          <span>Progression globale</span>
-          <strong>{project.progress.completedPhases}/{project.progress.totalPhases} phases validées</strong>
-        </div>
-        <div className="dashboard-progress-track">
-          <span style={{ width: `${project.progress.percentage}%` }} />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ProjectDashboardCardView({ project }: { project: ProjectDashboardCard }) {
-  const nextAction = project.attention.items[0]?.message ?? "Aucune attention particulière";
-
-  return (
-    <Link className={`dashboard-project-card ${project.attention.hasBlockers ? "dashboard-project-card-alert" : ""}`} href={`/projects/${project.id}`}>
-      <div className="dashboard-project-card-top">
-        <div>
-          <p className="mini-label">Projet</p>
-          <h3>{project.name}</h3>
-        </div>
-        {project.phase && <StatusBadge status={project.phase.status} />}
-      </div>
-
-      <p className="project-card-description">{project.description || "Aucune description"}</p>
-
-      <div className="dashboard-project-card-meta">
-        <span>Phase actuelle</span>
-        <strong>{project.phase ? `${String(project.phase.order).padStart(2, "0")} · ${project.phase.name}` : "Aucune phase"}</strong>
-      </div>
-
-      <div className="dashboard-progress-block">
-        <div className="dashboard-progress-header">
-          <span>Progression</span>
-          <strong>{project.progress.percentage}%</strong>
-        </div>
-        <div className="dashboard-progress-track">
-          <span style={{ width: `${project.progress.percentage}%` }} />
-        </div>
-        <small>
-          {project.progress.completedPhases}/{project.progress.totalPhases} phases validées
-        </small>
-      </div>
-
-      <div className="dashboard-card-stats">
-        <span>
-          <strong>{project.tasks.done}</strong>
-          <small>tâches terminées</small>
-        </span>
-        <span>
-          <strong>{project.tasks.blocked}</strong>
-          <small>bloquées</small>
-        </span>
-        <span>
-          <strong>{project.interviews.completed}</strong>
-          <small>interviews</small>
-        </span>
-        <span>
-          <strong>{project.evidence.verified}</strong>
-          <small>preuves</small>
-        </span>
-      </div>
-
-      <div className="dashboard-card-footer">
-        <span className="dashboard-card-action">Prochaine action</span>
-        <strong>{nextAction}</strong>
-      </div>
-    </Link>
-  );
-}
-
 function DashboardAttention({ items }: { items: (DashboardAttentionItem & { projectId: string; projectName: string })[] }) {
   return (
-    <section className="content-section dashboard-panel">
+    <section className="dashboard-section dashboard-attention-section">
       <div className="section-heading">
         <div>
           <p className="eyebrow">À traiter</p>
           <h2>Points d’attention</h2>
         </div>
-        <span className="panel-pill">{items.length}</span>
+        <span className="panel-pill">{items.length} priorité{items.length > 1 ? "s" : ""}</span>
       </div>
 
       {items.length === 0 ? (
@@ -233,8 +108,8 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
                 {item.severity === "HIGH" ? "!" : "·"}
               </span>
               <span className="dashboard-attention-copy">
-                <strong>{item.projectName}</strong>
-                <small>{item.message}</small>
+                <small>{item.severity === "HIGH" ? "À corriger" : "À surveiller"} · {item.projectName}</small>
+                <strong>{item.message}</strong>
               </span>
               <span className="row-arrow" aria-hidden="true">
                 →
@@ -247,9 +122,38 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
   );
 }
 
+function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }) {
+  return (
+    <section className="dashboard-section">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Portefeuille</p>
+          <h2>Progression</h2>
+        </div>
+        <Link className="text-link" href="/projects">Voir les projets <span aria-hidden="true">→</span></Link>
+      </div>
+      <div className="dashboard-progression-list">
+        {projects.map((project) => (
+          <Link className="dashboard-progression-row" href={`/projects/${project.id}`} key={project.id}>
+            <span className="dashboard-progression-name">
+              <strong>{project.name}</strong>
+              <small>{project.phase ? `Phase ${project.phase.order} · ${project.phase.name}` : "Aucune phase active"}</small>
+            </span>
+            <span className="dashboard-progression-bar" aria-label={`${project.progress.percentage}% terminé`}>
+              <span style={{ width: `${project.progress.percentage}%` }} />
+            </span>
+            <strong className="dashboard-progression-value">{project.progress.percentage}%</strong>
+            {project.phase && <StatusBadge status={project.phase.status} />}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RecentValidations({ validations }: { validations: ProjectDashboardResult["recentValidations"] }) {
   return (
-    <section className="content-section dashboard-panel">
+    <section className="dashboard-section dashboard-validations-section">
       <div className="section-heading">
         <div>
           <p className="eyebrow">Historique</p>

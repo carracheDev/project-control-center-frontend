@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { NotificationSetup } from "@/components/notification-setup";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/breadcrumbs";
-import { logout } from "@/lib/api";
+import { getPhase, getProject, logout } from "@/lib/api";
 
 interface AppShellProps {
   children: ReactNode;
@@ -24,10 +24,27 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [context, setContext] = useState<{ project?: string; phase?: string }>({});
+
+  useEffect(() => {
+    const id = pathname.match(/\/(?:projects|phases)\/([^/]+)/)?.[1];
+    if (!id || pathname.endsWith("/new")) return;
+    if (pathname.startsWith("/projects/")) {
+      void getProject(id).then((project) => setContext({ project: project.name })).catch(() => setContext({}));
+      return;
+    }
+    if (pathname.startsWith("/phases/")) {
+      void getPhase(id).then(async (phase) => {
+        const project = await getProject(phase.projectId);
+        setContext({ project: project.name, phase: `Phase ${phase.order} — ${phase.name}` });
+      }).catch(() => setContext({}));
+      return;
+    }
+  }, [pathname]);
 
   if (pathname === "/login") return <>{children}</>;
 
-  const breadcrumbItems = buildBreadcrumbItems(pathname);
+  const breadcrumbItems = buildBreadcrumbItems(pathname, context);
 
   return (
     <div className="flex min-h-screen bg-[var(--paper)] text-[var(--ink)]">
@@ -124,7 +141,7 @@ export function AppShell({ children }: AppShellProps) {
   );
 }
 
-function buildBreadcrumbItems(pathname: string): BreadcrumbItem[] {
+function buildBreadcrumbItems(pathname: string, context: { project?: string; phase?: string }): BreadcrumbItem[] {
   const normalizedPath = pathname === "/" ? "/dashboard" : pathname;
 
   if (normalizedPath === "/dashboard") {
@@ -145,14 +162,15 @@ function buildBreadcrumbItems(pathname: string): BreadcrumbItem[] {
   if (normalizedPath.startsWith("/projects/")) {
     return [
       { label: "Projets", href: "/projects" },
-      { label: "Projet" },
+      { label: context.project || "Projet" },
     ];
   }
 
   if (normalizedPath.startsWith("/phases/")) {
     return [
       { label: "Projets", href: "/projects" },
-      { label: "Phase" },
+      ...(context.project ? [{ label: context.project }] : []),
+      { label: context.phase || "Phase" },
     ];
   }
 
