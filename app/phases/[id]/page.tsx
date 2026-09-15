@@ -11,6 +11,7 @@ import { InterviewForm } from "@/components/interview-form";
 import { EvidenceForm } from "@/components/evidence-form";
 import { CoverageRequirementForm } from "@/components/coverage-requirement-form";
 import { LoadingState } from "@/components/loading-state";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { PhaseHeader } from "@/components/phase-header";
 import { PhaseOverview } from "@/components/phase-overview";
 import { PhaseSummary } from "@/components/phase-summary";
@@ -49,6 +50,7 @@ export default function PhaseDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ kind: Exclude<FormKind, null>; id: string } | null>(null);
   const [activeTab, setActiveTab] = useState<PhaseTab>(() => {
     const requestedTab = searchParams.get("tab");
     const validTabs: PhaseTab[] = ["overview", "objectives", "criteria", "tasks", "questionnaires", "interviews", "evidence", "history"];
@@ -247,7 +249,11 @@ export default function PhaseDetailPage() {
   }
 
   async function remove(kind: Exclude<FormKind, null>, id: string) {
-    if (!window.confirm("Supprimer cet élément ?")) return;
+    setPendingDelete({ kind, id });
+  }
+
+  async function confirmRemove(kind: Exclude<FormKind, null>, id: string) {
+    setPendingDelete(null);
     try {
       if (kind === "objective") { await deleteObjective(id); setObjectives((items) => items.filter((item) => item.id !== id)); }
       if (kind === "criterion") { await deleteCriterion(id); setCriteria((items) => items.filter((item) => item.id !== id)); }
@@ -343,6 +349,7 @@ export default function PhaseDetailPage() {
       <button className="rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50" type="button" disabled={!gating?.canValidate || workflow?.locked || phase.status === "VALIDATED" || isSubmitting} onClick={() => void validateCurrentPhase()}>{isSubmitting ? "Validation..." : "Valider la phase"}</button>
       <div className="mt-6 border-t border-line pt-4"><h3>Historique des validations</h3>{validations.length === 0 ? <p>Aucune validation enregistrée.</p> : <ol>{validations.map((validation) => <li key={validation.id}><strong>{formatDate(validation.validatedAt)}</strong><span>{validation.validatedBy || "Auteur non renseigné"}</span>{validation.note && <small>{validation.note}</small>}</li>)}</ol>}</div>
     </section>
+    <ConfirmDialog open={pendingDelete !== null} title="Supprimer cet élément ?" description="Cette action est définitive et l’élément sera retiré de la phase." onCancel={() => setPendingDelete(null)} onConfirm={() => pendingDelete && void confirmRemove(pendingDelete.kind, pendingDelete.id)} />
   </main>;
 }
 

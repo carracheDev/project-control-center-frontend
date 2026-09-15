@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowRight, CalendarDays, CheckCircle2, Layers3, Plus } from "lucide-react";
 import { LoadingState } from "@/components/loading-state";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { ProjectDecisionSection } from "@/components/project-decision-section";
 import { PhaseForm } from "@/components/phase-form";
 import { ProjectForm } from "@/components/project-form";
@@ -23,6 +24,7 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isAddingPhase, setIsAddingPhase] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(searchParams.get("created") ? "Projet créé avec succès." : null);
@@ -66,7 +68,8 @@ export default function ProjectDetailPage() {
   }
 
   async function handleDelete() {
-    if (!project || !window.confirm(`Supprimer le projet « ${project.name} » et ses phases ?`)) return;
+    if (!project) return;
+    setIsDeleteDialogOpen(false);
     setIsSubmitting(true);
     try {
       await deleteProject(project.id);
@@ -120,7 +123,7 @@ export default function ProjectDetailPage() {
               <button className="rounded-lg border border-line bg-panel px-3 py-2 text-sm font-semibold text-brand-900 transition-colors duration-200 hover:border-brand-900 hover:bg-brand-900 hover:text-white" type="button" onClick={() => setIsEditing(true)}>
                 Modifier
               </button>
-              <button className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-danger transition-colors duration-200 hover:border-danger hover:bg-danger hover:text-white disabled:opacity-50" type="button" onClick={() => void handleDelete()} disabled={isSubmitting}>
+              <button className="rounded-lg border border-red-200 px-3 py-2 text-sm font-semibold text-danger transition-colors duration-200 hover:border-danger hover:bg-danger hover:text-white disabled:opacity-50" type="button" onClick={() => setIsDeleteDialogOpen(true)} disabled={isSubmitting}>
                 Supprimer
               </button>
             </div>
@@ -227,6 +230,7 @@ export default function ProjectDetailPage() {
           </section>
 
           <ProjectDecisionSection projectId={project.id} />
+          <ConfirmDialog open={isDeleteDialogOpen} title="Supprimer ce projet ?" description={`Le projet « ${project.name} » et toutes ses phases seront supprimés définitivement.`} isSubmitting={isSubmitting} onCancel={() => setIsDeleteDialogOpen(false)} onConfirm={() => void handleDelete()} />
         </>
       )}
     </main>

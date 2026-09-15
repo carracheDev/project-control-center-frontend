@@ -5,6 +5,7 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoadingState } from "@/components/loading-state";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { OptionForm } from "@/components/option-form";
 import { QuestionForm } from "@/components/question-form";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
@@ -27,6 +28,7 @@ export default function QuestionnaireDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ type: "question" | "option"; id: string; questionId?: string } | null>(null);
 
   useEffect(() => {
     getQuestionnaire(params.id)
@@ -70,13 +72,21 @@ export default function QuestionnaireDetailPage() {
   }
 
   async function removeQuestion(id: string) {
-    if (!window.confirm("Supprimer cette question et ses options ?")) return;
+    setPendingDelete({ type: "question", id });
+  }
+
+  async function confirmRemoveQuestion(id: string) {
+    setPendingDelete(null);
     try { await deleteQuestion(id); setQuestions((items) => items.filter((item) => item.id !== id)); setSuccess("Question supprimée."); }
     catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Impossible de supprimer la question"); }
   }
 
   async function removeOption(questionId: string, id: string) {
-    if (!window.confirm("Supprimer cette option ?")) return;
+    setPendingDelete({ type: "option", id, questionId });
+  }
+
+  async function confirmRemoveOption(questionId: string, id: string) {
+    setPendingDelete(null);
     try { await deleteOption(id); setQuestions((items) => items.map((question) => question.id === questionId ? { ...question, options: question.options.filter((option) => option.id !== id) } : question)); setSuccess("Option supprimée."); }
     catch (requestError) { setError(requestError instanceof Error ? requestError.message : "Impossible de supprimer l’option"); }
   }
@@ -104,6 +114,7 @@ export default function QuestionnaireDetailPage() {
       {formKind === "question" && <QuestionForm question={editingQuestion} objectives={objectives} nextOrder={questions.length + 1} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveQuestion} />}
       {questions.length === 0 ? <div className="border border-dashed border-line p-5 text-sm text-muted">Aucune question définie.</div> : <div className="space-y-4">{questions.map((question) => <div className="rounded-xl border border-line bg-panel p-5 transition duration-150 hover:border-accent-400 hover:shadow-[0_8px_20px_rgba(15,23,42,.06)]" key={question.id}><div className="flex flex-col gap-4 sm:flex-row sm:items-start"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-xs font-bold text-brand-900">{String(question.order).padStart(2, "0")}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-semibold text-ink">{question.text} {question.required && <span className="ml-2 rounded bg-amber-50 px-2 py-1 text-[10px] font-bold text-warning">Requis</span>}</h3><p className="mt-1 text-xs text-muted">{question.type} · {question.description || "Aucune description"}</p></div><div className="flex gap-2"><button className="rounded-md border border-line px-2 py-1 text-xs text-muted" type="button" onClick={() => { setEditingId(question.id); setFormKind("question"); }} aria-label="Modifier la question"><Pencil aria-hidden="true" size={14} /></button><button className="rounded-md border border-red-200 px-2 py-1 text-xs text-danger" type="button" onClick={() => void removeQuestion(question.id)} aria-label="Supprimer la question"><Trash2 aria-hidden="true" size={14} /></button></div></div><div className="mt-4 border-t border-line pt-4"><div className="mb-3 flex items-center justify-between"><span className="text-xs font-semibold uppercase tracking-wide text-muted">Options</span><button className="text-xs font-semibold text-brand-900" type="button" onClick={() => { setActiveQuestionId(question.id); setEditingId(null); setFormKind("option"); }}><Plus aria-hidden="true" size={14} /> Ajouter</button></div>{activeQuestionId === question.id && formKind === "option" && <OptionForm option={editingOption} nextOrder={question.options.length + 1} isSubmitting={isSubmitting} error={error} onCancel={closeForm} onSubmit={saveOption} />}{question.options.map((option) => <div className="flex items-center justify-between border-t border-line py-2 text-sm" key={option.id}><span className="text-ink">{option.order}. {option.label}</span><div className="flex items-center gap-3"><small className="text-muted">{option.value}</small><button className="text-xs text-muted" type="button" onClick={() => { setActiveQuestionId(question.id); setEditingId(option.id); setFormKind("option"); }} aria-label="Modifier l’option"><Pencil aria-hidden="true" size={14} /></button><button className="text-xs text-danger" type="button" onClick={() => void removeOption(question.id, option.id)} aria-label="Supprimer l’option"><Trash2 aria-hidden="true" size={14} /></button></div></div>)}</div></div></div></div>)}</div>}
     </section>
-    {isDeleteDialogOpen && <div className="fixed inset-0 z-50 grid place-items-center bg-brand-950/35 px-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setIsDeleteDialogOpen(false); }}><div className="w-full max-w-md rounded-xl border border-line bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,.2)]" role="dialog" aria-modal="true" aria-labelledby="delete-questionnaire-title"><p className="text-xs font-bold uppercase tracking-[.14em] text-danger">Action irréversible</p><h2 id="delete-questionnaire-title" className="mt-2 font-display text-xl font-semibold text-ink">Supprimer ce questionnaire ?</h2><p className="mt-3 text-sm leading-6 text-muted">Le questionnaire « {questionnaire.name} » et sa structure seront supprimés définitivement.</p><div className="mt-6 flex justify-end gap-3"><button className="rounded-lg border border-line bg-panel px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-brand-900 hover:bg-brand-900 hover:text-white" type="button" onClick={() => setIsDeleteDialogOpen(false)}>Annuler</button><button className="rounded-lg border border-danger bg-danger px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-red-700 hover:bg-red-700" type="button" onClick={() => void confirmRemoveQuestionnaire()}>Supprimer définitivement</button></div></div></div>}
+    <ConfirmDialog open={isDeleteDialogOpen} title="Supprimer ce questionnaire ?" description={`Le questionnaire « ${questionnaire.name} » et sa structure seront supprimés définitivement.`} onCancel={() => setIsDeleteDialogOpen(false)} onConfirm={() => void confirmRemoveQuestionnaire()} />
+    <ConfirmDialog open={pendingDelete !== null} title={pendingDelete?.type === "question" ? "Supprimer cette question ?" : "Supprimer cette option ?"} description={pendingDelete?.type === "question" ? "La question et ses options seront supprimées définitivement." : "Cette option sera supprimée définitivement."} onCancel={() => setPendingDelete(null)} onConfirm={() => { if (pendingDelete?.type === "question") void confirmRemoveQuestion(pendingDelete.id); if (pendingDelete?.type === "option" && pendingDelete.questionId) void confirmRemoveOption(pendingDelete.questionId, pendingDelete.id); }} />
   </main>;
 }

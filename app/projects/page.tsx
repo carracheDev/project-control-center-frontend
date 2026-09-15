@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { LoadingState } from "@/components/loading-state";
 import { StatusBadge } from "@/components/status-badge";
 import { deleteProject, getProjects } from "@/lib/api";
@@ -25,6 +26,7 @@ function ProjectsContent() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(searchParams.get("deleted") ? "Projet supprimé avec succès." : null);
 
@@ -39,12 +41,12 @@ function ProjectsContent() {
   }, []);
 
   async function handleDelete(project: Project) {
-    if (!window.confirm(`Supprimer le projet « ${project.name} » et ses phases ?`)) return;
     setDeletingId(project.id);
     try {
       await deleteProject(project.id);
       setProjects((current) => current.filter((item) => item.id !== project.id));
       setSuccess("Projet supprimé avec succès.");
+      setProjectToDelete(null);
       setError(null);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Impossible de supprimer le projet");
@@ -116,7 +118,7 @@ function ProjectsContent() {
                     <button
                       className="px-2 py-2 text-xs font-semibold text-muted hover:text-danger"
                       type="button"
-                      onClick={() => void handleDelete(project)}
+                      onClick={() => setProjectToDelete(project)}
                       disabled={deletingId === project.id}
                     >
                       {deletingId === project.id ? "Suppression..." : "Supprimer"}
@@ -128,6 +130,7 @@ function ProjectsContent() {
           </div>
         )}
       </section>
+      <ConfirmDialog open={projectToDelete !== null} title="Supprimer ce projet ?" description={projectToDelete ? `Le projet « ${projectToDelete.name} » et toutes ses phases seront supprimés définitivement.` : ""} isSubmitting={deletingId !== null} onCancel={() => setProjectToDelete(null)} onConfirm={() => projectToDelete && void handleDelete(projectToDelete)} />
     </main>
   );
 }
