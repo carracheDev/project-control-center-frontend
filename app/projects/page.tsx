@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/empty-state";
@@ -61,7 +62,7 @@ function ProjectsContent() {
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">Pilotez vos projets et gardez une lecture nette des phases, états et prochaines actions.</p>
         </div>
         <Link className="inline-flex items-center rounded-lg bg-brand-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-950" href="/projects/new">
-          <span aria-hidden="true">+</span> Nouveau projet
+          <Plus aria-hidden="true" size={16} /> Nouveau projet
         </Link>
       </section>
 
@@ -94,7 +95,7 @@ function ProjectsContent() {
               const blocked = currentPhase?.status === "LOCKED" || currentPhase?.status === "REOPENED";
 
               return (
-                <article className="grid gap-5 py-5 first:pt-0 last:pb-0 lg:grid-cols-[1.5fr_1fr_1.2fr_auto] lg:items-center" key={project.id}>
+                <article className="group grid gap-5 rounded-xl border border-transparent px-3 py-5 transition duration-150 hover:border-accent-400 hover:bg-surface hover:shadow-[0_8px_20px_rgba(15,23,42,.06)] first:pt-5 last:pb-5 lg:grid-cols-[1.5fr_1fr_1.2fr_auto] lg:items-center" key={project.id}>
                   <div className="flex items-start gap-3">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-900 text-sm font-bold text-white" aria-hidden="true">{project.name.slice(0, 1).toUpperCase()}</span>
                     <div><h3 className="font-semibold text-ink">{project.name}</h3><p className="mt-1 text-xs text-muted">{project.description || "Aucune description"}</p></div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowRight, Plus } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { LoadingState } from "@/components/loading-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -30,7 +31,7 @@ export function DashboardPage() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">Voici l’état actuel de vos projets, phases et prochaines actions à traiter.</p>
         </div>
         <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-950 px-4 text-sm font-semibold text-white transition hover:bg-brand-900" href="/projects/new">
-          <span aria-hidden="true">+</span> Nouveau projet
+          <Plus aria-hidden="true" size={16} /> Nouveau projet
         </Link>
       </section>
 
@@ -111,9 +112,7 @@ function DashboardAttention({ items }: { items: (DashboardAttentionItem & { proj
                 <small className="order-first text-[10px] font-bold uppercase tracking-[.06em] text-muted">{item.severity === "HIGH" ? "À corriger" : "À surveiller"} · {item.projectName}</small>
                 <strong className="text-[13px] font-semibold leading-5 text-ink">{item.message}</strong>
               </span>
-              <span className="text-lg text-muted" aria-hidden="true">
-                →
-              </span>
+              <ArrowRight className="text-muted" aria-hidden="true" size={17} />
             </Link>
           ))}
         </div>
@@ -130,7 +129,7 @@ function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">Portefeuille</p>
           <h2 className="font-display text-xl font-bold tracking-tight text-ink">Progression des projets</h2>
         </div>
-        <Link className="text-xs font-bold text-blue-600 hover:text-blue-800" href="/projects">Voir les projets <span aria-hidden="true">→</span></Link>
+        <Link className="inline-flex items-center gap-1 text-xs font-bold text-brand-900 hover:text-brand-950" href="/projects">Voir les projets <ArrowRight aria-hidden="true" size={14} /></Link>
       </div>
       <div className="border-t border-line">
         {projects.map((project) => (

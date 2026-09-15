@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { FolderKanban, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { NotificationSetup } from "@/components/notification-setup";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/breadcrumbs";
 import { getPhase, getProject, logout } from "@/lib/api";
@@ -90,7 +91,7 @@ export function AppShell({ children }: AppShellProps) {
                 aria-current={isActive ? "page" : undefined}
               >
                 <span aria-hidden="true" className={isActive ? "text-accent-400" : "text-[#7182a0]"}>
-                  {item.label === "Vue d'ensemble" ? "◈" : "▤"}
+                  {item.label === "Vue d'ensemble" ? <LayoutDashboard size={15} strokeWidth={2} /> : <FolderKanban size={15} strokeWidth={2} />}
                 </span>
                 {item.label}
               </Link>
@@ -109,7 +110,7 @@ export function AppShell({ children }: AppShellProps) {
               void logout().finally(() => router.replace("/login"));
             }}
           >
-            Quitter
+            <LogOut className="mr-1 inline" size={13} /> Quitter
           </button>
         </div>
       </aside>
@@ -124,7 +125,7 @@ export function AppShell({ children }: AppShellProps) {
                 className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line bg-panel text-sm text-ink md:hidden"
                 onClick={() => setIsMobileNavOpen((current) => !current)}
               >
-                {isMobileNavOpen ? "✕" : "☰"}
+                {isMobileNavOpen ? <X size={16} /> : <Menu size={16} />}
               </button>
               <Breadcrumbs items={breadcrumbItems} />
             </div>

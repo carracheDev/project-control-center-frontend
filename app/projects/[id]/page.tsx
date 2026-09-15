@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { ArrowRight, Plus } from "lucide-react";
 import { LoadingState } from "@/components/loading-state";
 import { ProjectDecisionSection } from "@/components/project-decision-section";
 import { PhaseForm } from "@/components/phase-form";
@@ -177,7 +178,7 @@ export default function ProjectDetailPage() {
                 <h2 className="mt-1 font-display text-xl font-semibold text-ink">Phases du projet</h2>
               </div>
               <button className="rounded-lg bg-brand-900 px-3 py-2 text-sm font-semibold text-white" type="button" onClick={() => setIsAddingPhase((current) => !current)}>
-                <span aria-hidden="true">+</span> Nouvelle phase
+                <Plus aria-hidden="true" size={16} /> Nouvelle phase
               </button>
             </div>
 
@@ -214,9 +215,7 @@ export default function ProjectDetailPage() {
                     <div className="flex shrink-0 items-center gap-3 text-xs text-muted">
                       <StatusBadge status={phase.status} />
                       <span>{formatDate(phase.deadline)}</span>
-                      <span className="row-arrow" aria-hidden="true">
-                        →
-                      </span>
+                      <ArrowRight className="text-muted" aria-hidden="true" size={16} />
                     </div>
                   </Link>
                 ))}

@@ -17,7 +17,7 @@ export function PhaseOverview({ phase, workflow, readiness, gating, validations,
       <PhaseActionPanel phase={phase} workflow={workflow} gating={gating} isSubmitting={isSubmitting} onValidate={onValidate} onShowBlockers={onShowBlockers} />
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm transition duration-150 hover:border-accent-400 hover:shadow-[0_8px_20px_rgba(15,23,42,.06)]">
           <h3 className="font-display text-lg font-semibold text-ink">Bloqueurs</h3>
           {readiness?.blockers.length || gating?.blockers.length ? (
             <ul className="mt-3 space-y-2 text-sm leading-5 text-muted">
@@ -30,7 +30,7 @@ export function PhaseOverview({ phase, workflow, readiness, gating, validations,
           )}
         </article>
 
-        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm transition duration-150 hover:border-accent-400 hover:shadow-[0_8px_20px_rgba(15,23,42,.06)]">
           <h3 className="font-display text-lg font-semibold text-ink">Prochaine action</h3>
           {readiness?.nextActions.length ? (
             <ul className="mt-3 space-y-2 text-sm leading-5 text-muted">
@@ -43,7 +43,7 @@ export function PhaseOverview({ phase, workflow, readiness, gating, validations,
           )}
         </article>
 
-        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm transition duration-150 hover:border-accent-400 hover:shadow-[0_8px_20px_rgba(15,23,42,.06)]">
           <h3 className="font-display text-lg font-semibold text-ink">Validation</h3>
           <div className="mt-3 space-y-2 text-sm text-muted">
             <p>{gating?.canValidate ? "Gating : CAN VALIDATE" : "Gating : conditions non remplies"}</p>
