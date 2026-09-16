@@ -44,6 +44,7 @@ export function DashboardPage() {
           <div className="space-y-8">
             <DashboardSummary summary={dashboard.summary} />
             <DashboardAnalytics projects={dashboard.projects} />
+            <IntelligenceCard projects={dashboard.projects} />
 
             {dashboard.projects.length === 0 ? (
               <EmptyState
