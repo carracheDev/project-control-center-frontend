@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ArrowLeft, CalendarDays } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
+import { PccIntelligenceButton } from "@/components/pcc-intelligence/pcc-intelligence-button";
 import { formatDate } from "@/lib/format";
 import type { Phase, Project } from "@/types/domain";
 
-export function PhaseHeader({ phase, project }: { phase: Phase; project: Project | null }) {
+export function PhaseHeader({ phase, project, onOpenIntelligence }: { phase: Phase; project: Project | null; onOpenIntelligence: () => void }) {
   return <>
     <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs text-muted" aria-label="Fil d'Ariane">
       <Link className="transition-colors hover:text-brand-900" href="/projects">Projets</Link>
@@ -25,7 +26,7 @@ export function PhaseHeader({ phase, project }: { phase: Phase; project: Project
       </div>
 
       <div className="flex shrink-0 flex-col items-start gap-4 sm:items-end">
-        <StatusBadge status={phase.status} />
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end"><StatusBadge status={phase.status} /><PccIntelligenceButton onClick={onOpenIntelligence} /></div>
         <div className="text-left sm:text-right">
           <span className="flex items-center justify-start gap-1 text-xs text-muted sm:justify-end"><CalendarDays size={13} /> Deadline</span>
           <strong className="text-sm font-semibold text-ink">{formatDate(phase.deadline)}</strong>

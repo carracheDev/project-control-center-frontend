@@ -19,6 +19,7 @@ import { ObjectiveForm } from "@/components/objective-form";
 import { QuestionnaireForm } from "@/components/questionnaire-form";
 import { TaskForm } from "@/components/task-form";
 import { TaskKanban } from "@/components/task-kanban";
+import { PccIntelligencePanel } from "@/components/pcc-intelligence/pcc-intelligence-panel";
 import { createCoverageRequirement, createCriterion, createEvidence, createInterview, createObjective, createQuestionnaire, createTask, deleteCoverageRequirement, deleteCriterion, deleteEvidence, deleteInterview, deleteObjective, deleteQuestionnaire, deleteTask, getCoverage, getCoverageRequirements, getCriteria, getEvidence, getInterviews, getObjectives, getPhase, getPhaseGating, getPhaseReadiness, getPhaseValidations, getPhaseWorkflow, getProject, getProjectMembers, getQuestionnaires, getTasks, rejectEvidence, updateCoverageRequirement, updateCriterion, updateEvidence, updateInterview, updateObjective, updateQuestionnaire, updateTask, uploadEvidence, validatePhase, verifyEvidence } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import type { Criterion, CreateCoverageRequirementInput, CreateCriterionInput, CreateEvidenceInput, CreateInterviewInput, CreateObjectiveInput, CreateQuestionnaireInput, CreateTaskInput, CoverageRequirement, Evidence, GatingResult, Interview, Objective, Phase, PhaseCoverageResult, PhaseReadinessResult, PhaseValidation, PhaseWorkflowState, Project, ProjectMember, Questionnaire, Task } from "@/types/domain";
@@ -50,6 +51,7 @@ export default function PhaseDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isIntelligenceOpen, setIsIntelligenceOpen] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{ kind: Exclude<FormKind, null>; id: string } | null>(null);
   const [activeTab, setActiveTab] = useState<PhaseTab>(() => {
     const requestedTab = searchParams.get("tab");
@@ -284,7 +286,8 @@ export default function PhaseDetailPage() {
   ];
 
   return <main className="space-y-6">
-    <PhaseHeader phase={phase} project={project} />
+    <PhaseHeader phase={phase} project={project} onOpenIntelligence={() => setIsIntelligenceOpen(true)} />
+    <PccIntelligencePanel phaseId={phase.id} phaseName={phase.name} open={isIntelligenceOpen} onClose={() => setIsIntelligenceOpen(false)} />
     <PhaseSummary phase={phase} blockers={readinessBlockers + gatingBlockers} objectives={objectives.length} criteria={criteria.length} tasks={tasks.length} interviews={interviews.length} evidence={evidence.length} readiness={readiness} gating={gating} />
     <PhaseOverview phase={phase} workflow={workflow} readiness={readiness} gating={gating} validations={validations} isSubmitting={isSubmitting} onValidate={() => void validateCurrentPhase()} onShowBlockers={() => setActiveTab("overview")} />
     <nav className="flex items-stretch gap-1 overflow-x-auto border-b border-line" aria-label="Navigation locale de la phase">
