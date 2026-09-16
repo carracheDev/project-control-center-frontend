@@ -49,7 +49,7 @@ export function AppShell({ children }: AppShellProps) {
   const breadcrumbItems = buildBreadcrumbItems(pathname, context);
 
   return (
-    <div className="flex min-h-screen bg-canvas text-ink">
+    <div className="app-shell-root flex min-h-screen bg-canvas text-ink">
       <NotificationSetup />
 
       {isMobileNavOpen && (
