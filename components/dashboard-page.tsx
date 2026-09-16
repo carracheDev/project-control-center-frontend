@@ -23,19 +23,19 @@ export function DashboardPage() {
   }, []);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+    <main className="dashboard-canvas mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-10 lg:py-9">
       <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">Pilotage multi-projets</p>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-ink">Vue d&apos;ensemble</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">Voici l’état actuel de vos projets, phases et prochaines actions à traiter.</p>
+          <p className="mb-3 text-[10px] font-extrabold uppercase tracking-[.2em] text-cyan-300">Project Control Center / cockpit</p>
+          <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">Vue d&apos;ensemble</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">Le signal opérationnel de votre portefeuille, concentré en un seul espace.</p>
         </div>
-        <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand-950 px-4 text-sm font-semibold text-white transition hover:bg-brand-900" href="/projects/new">
+        <Link className="dashboard-primary-action inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-slate-950 transition" href="/projects/new">
           <Plus aria-hidden="true" size={16} /> Nouveau projet
         </Link>
       </section>
 
-      {error && <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-danger">Impossible de charger le dashboard : {error}</div>}
+      {error && <div className="mb-5 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">Impossible de charger le dashboard : {error}</div>}
 
       {isLoading ? (
         <LoadingState label="Chargement du dashboard..." />
@@ -53,7 +53,7 @@ export function DashboardPage() {
                 actionHref="/projects/new"
               />
             ) : (
-              <div className="grid gap-9">
+              <div className="grid gap-5">
                 <DashboardAttention items={dashboard.attentionItems} />
                 <div className="grid gap-9 lg:grid-cols-[minmax(0,1.45fr)_minmax(280px,.75fr)]">
                   <DashboardProgression projects={dashboard.projects} />
@@ -79,14 +79,14 @@ function DashboardSummary({ summary }: { summary: ProjectDashboardResult["summar
   ];
 
   return (
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6" aria-label="Résumé global">
+    <section className="dashboard-bento dashboard-kpis grid gap-3 sm:grid-cols-2 lg:grid-cols-6" aria-label="Résumé global">
       {metrics.map(([label, value, note, Icon, iconColor]) => (
-        <div className="will-change-transform flex min-h-[108px] items-center gap-3 rounded-[10px] border border-[#dbe3eb] bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,.06),0_5px_14px_rgba(15,23,42,.045)] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:border-accent-400 hover:shadow-[0_4px_8px_rgba(15,23,42,.08),0_12px_24px_rgba(15,23,42,.09)] motion-reduce:transform-none" key={label}>
-          <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full bg-panel ${iconColor}`} aria-hidden="true"><Icon size={15} strokeWidth={2} /></span>
+        <div className="dashboard-card will-change-transform flex min-h-[116px] items-center gap-3 rounded-2xl px-5 py-4 transition" key={label}>
+          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 ${iconColor}`} aria-hidden="true"><Icon size={15} strokeWidth={2} /></span>
           <span className="grid gap-1">
-            <span className="text-xs font-semibold text-ink">{label}</span>
-            <strong className="font-display text-2xl font-bold leading-none text-ink">{value}</strong>
-            <span className="text-[11px] text-muted">{note}</span>
+            <span className="text-xs font-semibold text-slate-400">{label}</span>
+            <strong className="font-display text-3xl font-bold leading-none text-white">{value}</strong>
+            <span className="text-[11px] text-slate-500">{note}</span>
           </span>
         </div>
       ))}
@@ -107,7 +107,7 @@ function DashboardAnalytics({ projects }: { projects: ProjectDashboardCard[] }) 
     criticalRisks: result.criticalRisks + project.risks.critical,
   }), { tasks: 0, doneTasks: 0, blockedTasks: 0, criteria: 0, satisfiedCriteria: 0, pendingCriteria: 0, risks: 0, openRisks: 0, criticalRisks: 0 });
 
-  return <section className="grid gap-4 lg:grid-cols-2" aria-label="Analyses du portefeuille">
+  return <section className="dashboard-bento grid gap-4 lg:grid-cols-3" aria-label="Analyses du portefeuille">
     <AnalyticsPanel icon={BarChart3} eyebrow="Exécution" title="État des tâches">
       <MetricBar label="Terminées" value={totals.doneTasks} total={totals.tasks} tone="success" />
       <MetricBar label="Bloquées" value={totals.blockedTasks} total={totals.tasks} tone="danger" />
@@ -130,13 +130,13 @@ function DashboardAnalytics({ projects }: { projects: ProjectDashboardCard[] }) 
 }
 
 function AnalyticsPanel({ icon: Icon, eyebrow, title, children }: { icon: LucideIcon; eyebrow: string; title: string; children: React.ReactNode }) {
-  return <section className="will-change-transform min-h-[220px] rounded-[10px] border border-[#dbe3eb] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,.06),0_5px_14px_rgba(15,23,42,.045)] transition-[transform,box-shadow,border-color] duration-300 ease-out hover:-translate-y-1 hover:scale-[1.01] hover:border-accent-400 hover:shadow-[0_4px_8px_rgba(15,23,42,.08),0_12px_24px_rgba(15,23,42,.09)] motion-reduce:transform-none"><div className="mb-5 flex items-start gap-3"><span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-panel text-brand-900"><Icon size={14} /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">{eyebrow}</p><h2 className="mt-1 font-display text-lg font-bold tracking-tight text-ink">{title}</h2></div></div><div className="space-y-4">{children}</div></section>;
+  return <section className="dashboard-card min-h-[220px] rounded-2xl p-6 transition"><div className="mb-5 flex items-start gap-3"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-white/5 text-cyan-300"><Icon size={14} /></span><div><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-cyan-300">{eyebrow}</p><h2 className="mt-1 font-display text-lg font-bold tracking-tight text-white">{title}</h2></div></div><div className="space-y-4">{children}</div></section>;
 }
 
 function MetricBar({ label, value, total, tone }: { label: string; value: number; total: number; tone: "success" | "warning" | "danger" }) {
   const width = total === 0 ? 0 : Math.round((value / total) * 100);
   const colors = { success: "bg-success", warning: "bg-accent-400", danger: "bg-danger" } as const;
-  return <div><div className="mb-1 flex items-center justify-between gap-3 text-xs"><span className="truncate text-muted">{label}</span><strong className="shrink-0 text-ink">{value} <span className="font-normal text-muted">({width}%)</span></strong></div><div className="h-2 overflow-hidden rounded-full bg-line"><span className={`block h-full rounded-full ${colors[tone]}`} style={{ width: `${width}%` }} /></div></div>;
+  return <div><div className="mb-1 flex items-center justify-between gap-3 text-xs"><span className="truncate text-slate-400">{label}</span><strong className="shrink-0 text-white">{value} <span className="font-normal text-slate-500">({width}%)</span></strong></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><span className={`block h-full rounded-full ${colors[tone]}`} style={{ width: `${width}%` }} /></div></div>;
 }
 
 function DashboardAttention({ items }: { items: (DashboardAttentionItem & { projectId: string; projectName: string })[] }) {
