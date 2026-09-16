@@ -354,7 +354,7 @@ export default function PhaseDetailPage() {
 }
 
 function EntitySection({ activeTab, title, actionLabel, count, action, children }: { activeTab: PhaseTab; title: string; actionLabel: string; count: number; action: () => void; children: ReactNode }) {
-  const tab = title === "Evidences" ? "evidence" : title.toLowerCase();
+  const tab: PhaseTab = title === "Objectifs" ? "objectives" : title === "Critères" ? "criteria" : title === "Tâches" ? "tasks" : title === "Evidences" ? "evidence" : title.toLowerCase() as PhaseTab;
   const SectionIcon = title === "Objectifs" ? Target : title === "Critères" ? ListChecks : title === "Tâches" ? ListTodo : title === "Questionnaires" ? ClipboardList : title === "Interviews" ? MessagesSquare : FileCheck;
   return (
     <section className={`${activeTab === tab ? "block" : "hidden"} rounded-2xl border border-line bg-surface p-5 shadow-sm sm:p-6`}>
