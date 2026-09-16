@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Activity, AlertCircle, ArrowRight, BarChart3, CheckCircle2, CircleCheck, Clock3, FolderKanban, ListChecks, Plus, ShieldAlert, type LucideIcon } from "lucide-react";
+import { Activity, AlertCircle, ArrowRight, BarChart3, CheckCircle2, CircleCheck, Clock3, FolderKanban, ListChecks, Plus, ShieldAlert, Sparkles, type LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { LoadingState } from "@/components/loading-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -139,31 +139,48 @@ function MetricBar({ label, value, total, tone }: { label: string; value: number
   return <div><div className="mb-1 flex items-center justify-between gap-3 text-xs"><span className="truncate text-slate-400">{label}</span><strong className="shrink-0 text-white">{value} <span className="font-normal text-slate-500">({width}%)</span></strong></div><div className="h-2 overflow-hidden rounded-full bg-white/10"><span className={`block h-full rounded-full ${colors[tone]}`} style={{ width: `${width}%` }} /></div></div>;
 }
 
+function IntelligenceCard({ projects }: { projects: ProjectDashboardCard[] }) {
+  const activeProject = projects.find((project) => project.phase);
+  return <section className="dashboard-intelligence dashboard-card rounded-2xl p-6 lg:col-span-3" aria-label="PCC Intelligence">
+    <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+      <div className="max-w-xl">
+        <p className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-[.18em] text-fuchsia-300"><Sparkles size={14} /> PCC Intelligence</p>
+        <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-white">Le prochain signal utile est dans vos phases.</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-400">Ouvrez une phase pour obtenir une analyse contextualisée des critères, preuves, readiness et gating.</p>
+      </div>
+      {activeProject?.phase ? <Link className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-fuchsia-300/30 bg-fuchsia-300/10 px-4 py-3 text-sm font-semibold text-fuchsia-100 transition hover:border-fuchsia-200 hover:bg-fuchsia-300/20" href={`/phases/${activeProject.phase.id}`}><Sparkles size={15} /> Analyser {activeProject.phase.name}<ArrowRight size={15} /></Link> : <span className="self-start rounded-xl border border-white/10 px-4 py-3 text-sm text-slate-500">Aucune phase active</span>}
+    </div>
+    <div className="mt-6 grid gap-3 border-t border-white/10 pt-5 text-xs text-slate-400 sm:grid-cols-3">
+      <span>01 / Contexte projet</span><span>02 / Blocages et signaux</span><span>03 / Conseil avant validation</span>
+    </div>
+  </section>;
+}
+
 function DashboardAttention({ items }: { items: (DashboardAttentionItem & { projectId: string; projectName: string })[] }) {
   return (
-    <section className="rounded-[10px] border border-[#dbe3eb] border-l-4 border-l-accent-400 bg-white px-5 pb-4 pt-5 shadow-[0_1px_2px_rgba(15,23,42,.06),0_5px_14px_rgba(15,23,42,.045)] sm:px-6">
+    <section className="dashboard-card rounded-2xl border-l-4 border-l-cyan-300 px-5 pb-4 pt-5 sm:px-6">
       <div className="mb-3 flex items-end justify-between gap-5">
         <div>
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">À traiter</p>
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink">Points d’attention</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-white">Points d’attention</h2>
         </div>
         <span className="rounded-full bg-panel px-2.5 py-1 text-[10px] font-bold text-muted">{items.length} priorité{items.length > 1 ? "s" : ""}</span>
       </div>
 
       {items.length === 0 ? (
-        <div className="border-t border-line py-6"><p className="text-sm font-medium text-ink">Tout est sous contrôle</p><p className="mt-1 text-xs text-muted">Aucun élément ne nécessite d’attention pour le moment.</p></div>
+        <div className="border-t border-white/10 py-6"><p className="text-sm font-medium text-white">Tout est sous contrôle</p><p className="mt-1 text-xs text-slate-400">Aucun élément ne nécessite d’attention pour le moment.</p></div>
       ) : (
-        <div className="border-t border-line">
+        <div className="border-t border-white/10">
           {items.slice(0, 6).map((item, index) => (
-            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line px-2 py-3 transition hover:border-accent-400 hover:bg-panel" href={attentionHref(item)} key={`${item.projectId}-${item.phaseId}-${item.type}-${item.target.id}-${index}`}>
+            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/10 px-2 py-3 transition hover:border-cyan-300/50 hover:bg-white/[.03]" href={attentionHref(item)} key={`${item.projectId}-${item.phaseId}-${item.type}-${item.target.id}-${index}`}>
               <span className={`grid h-8 w-8 place-items-center rounded-lg ${item.severity === "HIGH" ? "bg-red-50 text-danger" : "bg-amber-50 text-warning"}`} aria-hidden="true">
                 {item.severity === "HIGH" ? <AlertCircle size={16} /> : <Clock3 size={16} />}
               </span>
               <span className="grid min-w-0 gap-1">
                 <small className="order-first text-[10px] font-bold uppercase tracking-[.06em] text-muted">{item.severity === "HIGH" ? "À corriger" : "À surveiller"} · {item.projectName}</small>
-                <strong className="text-[13px] font-semibold leading-5 text-ink">{item.message}</strong>
+                <strong className="text-[13px] font-semibold leading-5 text-slate-200">{item.message}</strong>
               </span>
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-muted transition group-hover:text-brand-900">Ouvrir <ArrowRight aria-hidden="true" size={15} /></span>
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition group-hover:text-cyan-300">Ouvrir <ArrowRight aria-hidden="true" size={15} /></span>
             </Link>
           ))}
         </div>
@@ -183,21 +200,21 @@ function DashboardProgression({ projects }: { projects: ProjectDashboardCard[] }
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
           <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">Portefeuille</p>
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink">Progression des projets</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-white">Progression des projets</h2>
         </div>
-        <Link className="inline-flex items-center gap-1 text-xs font-bold text-brand-900 hover:text-brand-950" href="/projects">Voir les projets <ArrowRight aria-hidden="true" size={14} /></Link>
+        <Link className="inline-flex items-center gap-1 text-xs font-bold text-cyan-300 hover:text-white" href="/projects">Voir les projets <ArrowRight aria-hidden="true" size={14} /></Link>
       </div>
-      <div className="border-t border-line">
+      <div className="border-t border-white/10">
         {projects.map((project) => (
-          <Link className="group grid min-h-[72px] grid-cols-[minmax(140px,1fr)_minmax(100px,1.5fr)_42px_auto] items-center gap-4 rounded-lg border border-transparent border-b-line px-2 py-3 transition hover:border-accent-400 hover:bg-surface hover:shadow-[0_6px_16px_rgba(15,23,42,.05)]" href={`/projects/${project.id}`} key={project.id}>
+          <Link className="group grid min-h-[72px] grid-cols-[minmax(140px,1fr)_minmax(100px,1.5fr)_42px_auto] items-center gap-4 rounded-xl border border-transparent border-b-white/10 px-2 py-3 transition hover:border-cyan-300/40 hover:bg-white/[.03]" href={`/projects/${project.id}`} key={project.id}>
             <span className="grid min-w-0 gap-1">
-              <strong className="truncate text-[13px] font-semibold text-ink">{project.name}</strong>
-              <small className="truncate text-[11px] text-muted">{project.phase ? `Phase ${project.phase.order} · ${project.phase.name}` : "Aucune phase active"}</small>
+              <strong className="truncate text-[13px] font-semibold text-slate-200">{project.name}</strong>
+              <small className="truncate text-[11px] text-slate-500">{project.phase ? `Phase ${project.phase.order} · ${project.phase.name}` : "Aucune phase active"}</small>
             </span>
             <span className="h-1.5 overflow-hidden rounded-full bg-line" aria-label={`${project.progress.percentage}% terminé`}>
               <span className="block h-full rounded-full bg-accent-400" style={{ width: `${project.progress.percentage}%` }} />
             </span>
-            <strong className="text-right text-[13px] font-bold text-ink">{project.progress.percentage}%</strong>
+            <strong className="text-right text-[13px] font-bold text-white">{project.progress.percentage}%</strong>
             <HealthBadge health={project.health} />
             {project.phase && <StatusBadge status={project.phase.status} />}
           </Link>
@@ -221,25 +238,25 @@ function RecentValidations({ validations }: { validations: ProjectDashboardResul
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
         <div>
-          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-accent-400">Historique</p>
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink">Dernières validations</h2>
+          <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[.14em] text-cyan-300">Historique</p>
+          <h2 className="font-display text-xl font-bold tracking-tight text-white">Dernières validations</h2>
         </div>
         <span className="rounded-full bg-panel px-2.5 py-1 text-[10px] font-bold text-muted">{validations.length}</span>
       </div>
 
       {validations.length === 0 ? (
-        <p className="border-t border-line py-5 text-sm text-muted">Aucune validation récente.</p>
+        <p className="border-t border-white/10 py-5 text-sm text-slate-400">Aucune validation récente.</p>
       ) : (
-        <div className="border-t border-line">
+        <div className="border-t border-white/10">
           {validations.map((validation) => (
-            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-line rounded-lg px-2 py-3 transition hover:border-accent-400 hover:bg-surface" href={`/phases/${validation.phaseId}`} key={validation.id}>
+            <Link className="group grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border-b border-white/10 px-2 py-3 transition hover:border-cyan-300/40 hover:bg-white/[.03]" href={`/phases/${validation.phaseId}`} key={validation.id}>
               <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success" aria-hidden="true"><CircleCheck size={16} /></span>
               <span className="grid min-w-0 gap-1">
-                <strong className="truncate text-[13px] font-semibold text-ink">{validation.phaseName}</strong>
-                <small className="text-[11px] text-muted">
+                <strong className="truncate text-[13px] font-semibold text-slate-200">{validation.phaseName}</strong>
+                <small className="text-[11px] text-slate-500">
                   {validation.projectName} · {formatDate(validation.validatedAt)}
                 </small>
-                {validation.validatedBy && <small className="text-[11px] text-muted">par {validation.validatedBy}</small>}
+                {validation.validatedBy && <small className="text-[11px] text-slate-500">par {validation.validatedBy}</small>}
               </span>
               <ArrowRight className="text-muted transition group-hover:text-brand-900" aria-hidden="true" size={15} />
             </Link>
