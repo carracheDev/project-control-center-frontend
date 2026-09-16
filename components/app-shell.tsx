@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { FolderKanban, LayoutDashboard, LogOut, Menu, Moon, Sun, X } from "lucide-react";
+import { FolderKanban, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
 import { NotificationSetup } from "@/components/notification-setup";
 import { NotificationCenter } from "@/components/notification-center";
 import { Breadcrumbs, type BreadcrumbItem } from "@/components/breadcrumbs";
@@ -26,23 +26,7 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const [context, setContext] = useState<{ project?: string; phase?: string }>({});
-
-  useEffect(() => {
-    const savedTheme = window.localStorage.getItem("pcc-theme");
-    const nextTheme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
-    document.documentElement.dataset.theme = nextTheme;
-    const themeTimer = window.setTimeout(() => setTheme(nextTheme), 0);
-    return () => window.clearTimeout(themeTimer);
-  }, []);
-
-  function toggleTheme() {
-    const nextTheme = theme === "dark" ? "light" : "dark";
-    setTheme(nextTheme);
-    window.localStorage.setItem("pcc-theme", nextTheme);
-    document.documentElement.dataset.theme = nextTheme;
-  }
 
   useEffect(() => {
     const id = pathname.match(/\/(?:projects|phases)\/([^/]+)/)?.[1];
@@ -65,7 +49,7 @@ export function AppShell({ children }: AppShellProps) {
   const breadcrumbItems = buildBreadcrumbItems(pathname, context);
 
   return (
-    <div className="app-shell-root flex min-h-screen bg-canvas text-ink">
+    <div className="flex min-h-screen bg-canvas text-ink">
       <NotificationSetup />
 
       {isMobileNavOpen && (
@@ -147,7 +131,7 @@ export function AppShell({ children }: AppShellProps) {
               <Breadcrumbs items={breadcrumbItems} />
             </div>
 
-            <div className="flex items-center gap-2"><button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Activer le mode clair" : "Activer le mode sombre"} title={theme === "dark" ? "Mode clair" : "Mode sombre"}>{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}</button><NotificationCenter /><span className="hidden rounded border border-[#c9d9d3] px-2 py-1 text-[9px] font-bold tracking-[.12em] text-[#4e7975] md:inline-flex">PILOTAGE</span></div>
+            <div className="flex items-center gap-3"><NotificationCenter /><span className="hidden rounded border border-[#c9d9d3] px-2 py-1 text-[9px] font-bold tracking-[.12em] text-[#4e7975] md:inline-flex">PILOTAGE</span></div>
           </div>
         </header>
 
