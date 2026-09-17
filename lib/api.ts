@@ -55,7 +55,7 @@ import type {
   UpdateResponseInput,
   UpdateTaskInput,
 } from "@/types/domain";
-import type { PccAiAnalysis, PccAiChatRequest } from "@/types/pcc-ai";
+import type { PccAiAnalysis, PccAiChatRequest, PccAiChatResponse } from "@/types/pcc-ai";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -173,9 +173,9 @@ export function getPccPhaseAnalysis(phaseId: string): Promise<PccAiAnalysis> {
   return request<PccAiAnalysis>(`/ai/phases/${phaseId}/analyze`);
 }
 
-export function askPccPhase(phaseId: string, message: string): Promise<PccAiAnalysis> {
-  const input: PccAiChatRequest = { message };
-  return request<PccAiAnalysis>(`/ai/phases/${phaseId}/chat`, { method: "POST", body: JSON.stringify(input) });
+export function askPccPhase(phaseId: string, message: string, options: Omit<PccAiChatRequest, "message"> = {}): Promise<PccAiChatResponse> {
+  const input: PccAiChatRequest = { message, ...options };
+  return request<PccAiChatResponse>(`/ai/phases/${phaseId}/chat`, { method: "POST", body: JSON.stringify(input) });
 }
 
 export function getPhaseWorkflow(id: string): Promise<PhaseWorkflowState> { return request<PhaseWorkflowState>(`/phases/${id}/workflow`); }

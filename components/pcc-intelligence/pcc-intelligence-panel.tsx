@@ -3,7 +3,7 @@
 import { AlertCircle, LoaderCircle, Mic, Send, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { askPccPhase, getPccPhaseAnalysis } from "@/lib/api";
-import { buildSpeechText, type PccAiAnalysis, type PccAiMessage } from "@/types/pcc-ai";
+import { buildChatSpeechText, buildSpeechText, type PccAiAnalysis, type PccAiMessage } from "@/types/pcc-ai";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import { PccAnalysis } from "./pcc-analysis";
@@ -12,6 +12,7 @@ import { SpeechControls } from "./speech-controls";
 export function PccIntelligencePanel({ phaseId, phaseName, open, onClose }: { phaseId: string; phaseName: string; open: boolean; onClose: () => void }) {
   const [analysis, setAnalysis] = useState<PccAiAnalysis | null>(null);
   const [messages, setMessages] = useState<PccAiMessage[]>([]);
+  const [sessionId, setSessionId] = useState<string | undefined>();
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -46,25 +47,28 @@ export function PccIntelligencePanel({ phaseId, phaseName, open, onClose }: { ph
     return () => { window.clearTimeout(loadTimer); cancel(); };
   }, [open, loadAnalysis, cancel]);
 
-  async function sendQuestion(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const message = input.trim();
+  async function submitQuestion(message: string) {
     if (!message || isSending) return;
     setInput("");
     setMessages((items) => [...items, { id: `question-${Date.now()}`, role: "user", content: message }]);
     setIsSending(true);
     setError(null);
     try {
-      const result = await askPccPhase(phaseId, message);
-      const speechText = buildSpeechText(result);
-      setAnalysis(result);
-      setMessages((items) => [...items, { id: `answer-${Date.now()}`, role: "assistant", content: result.summary, speechText, analysis: result }]);
+      const result = await askPccPhase(phaseId, message, { sessionId });
+      setSessionId(result.sessionId);
+      const speechText = buildChatSpeechText(result);
+      setMessages((items) => [...items, { id: `answer-${Date.now()}`, role: "assistant", content: result.answer, speechText, chat: result }]);
       speak(speechText);
     } catch {
       setError("Je n'arrive pas à répondre pour le moment.");
     } finally {
       setIsSending(false);
     }
+  }
+
+  async function sendQuestion(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await submitQuestion(input.trim());
   }
 
   if (!open) return null;
@@ -81,7 +85,7 @@ export function PccIntelligencePanel({ phaseId, phaseName, open, onClose }: { ph
         {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-danger"><p className="flex items-center gap-2"><AlertCircle size={16} />{error}</p><button className="mt-3 rounded-md border border-red-300 px-3 py-1.5 text-xs font-semibold" type="button" onClick={() => void loadAnalysis()}>Réessayer</button></div>}
         {!isLoading && !error && analysis && <>
           <PccAnalysis analysis={analysis} />
-          {latestAssistant && <div className="mt-4 rounded-xl border border-line bg-panel p-4"><div className="mb-3 flex items-center justify-between gap-3"><p className="text-xs font-bold uppercase tracking-[.12em] text-muted">PCC Intelligence</p>{isSpeaking && <span className="flex items-center gap-1.5 text-xs font-semibold text-accent-400"><span className="h-2 w-2 animate-pulse rounded-full bg-accent-400" /> PCC parle</span>}</div><p className="text-sm leading-6 text-ink">{latestAssistant.content}</p><div className="mt-3"><SpeechControls isSpeaking={isSpeaking} isPaused={isPaused} isSupported={speechSupported} onSpeak={() => speak(latestAssistant.speechText ?? latestAssistant.content)} onPause={pause} onResume={resume} onCancel={cancel} /></div></div>}
+          {latestAssistant && <div className="mt-4 rounded-xl border border-line bg-panel p-4"><div className="mb-3 flex items-center justify-between gap-3"><p className="text-xs font-bold uppercase tracking-[.12em] text-muted">PCC Intelligence</p>{isSpeaking && <span className="flex items-center gap-1.5 text-xs font-semibold text-accent-400"><span className="h-2 w-2 animate-pulse rounded-full bg-accent-400" /> PCC parle</span>}</div><p className="text-sm leading-6 text-ink">{latestAssistant.content}</p>{latestAssistant.chat && <div className="mt-4 space-y-3 text-xs"><div><p className="font-bold uppercase tracking-[.1em] text-muted">Sources</p>{latestAssistant.chat.evidence.length > 0 ? <ul className="mt-1 space-y-1 text-ink">{latestAssistant.chat.evidence.map((item) => <li key={item.id}>[{item.type}] {item.label}{item.excerpt ? ` : ${item.excerpt}` : ""}</li>)}</ul> : <p className="mt-1 text-muted">Aucune source citée.</p>}</div>{latestAssistant.chat.missingInformation.length > 0 && <div><p className="font-bold uppercase tracking-[.1em] text-warning">Informations manquantes</p><p className="mt-1 text-ink">{latestAssistant.chat.missingInformation.join(" • ")}</p></div>}{latestAssistant.chat.suggestedNextQuestions.length > 0 && <div><p className="font-bold uppercase tracking-[.1em] text-accent-700">Questions suggérées</p><div className="mt-1 space-y-2">{latestAssistant.chat.suggestedNextQuestions.map((question) => <button className="block w-full rounded-lg border border-line bg-surface px-3 py-2 text-left text-ink hover:border-brand-900 disabled:opacity-50" type="button" key={question} onClick={() => setInput(question)} disabled={isSending}>Utiliser cette question : {question}</button>)}</div></div>}</div>}<div className="mt-3"><SpeechControls isSpeaking={isSpeaking} isPaused={isPaused} isSupported={speechSupported} onSpeak={() => speak(latestAssistant.speechText ?? latestAssistant.content)} onPause={pause} onResume={resume} onCancel={cancel} /></div></div>}
           <div className="mt-4 space-y-3">{messages.slice(0, -1).map((message) => <div className={`rounded-xl p-3 text-sm ${message.role === "user" ? "ml-8 bg-brand-900 text-white" : "mr-8 border border-line bg-panel text-ink"}`} key={message.id}><p className="mb-1 text-[10px] font-bold uppercase tracking-[.12em] opacity-60">{message.role === "user" ? "Vous" : "PCC Intelligence"}</p>{message.content}</div>)}</div>
         </>}
       </div>
